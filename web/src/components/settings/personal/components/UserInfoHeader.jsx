@@ -80,7 +80,7 @@ const UserInfoHeader = ({ t, userState }) => {
                     {getUsername()}
                   </div>
                   <div className='flex flex-wrap items-center gap-2'>
-                    {isRoot() ? (
+                    {userState.user?.role >= 100 ? (
                       <Tag
                         size='large'
                         shape='circle'
@@ -88,7 +88,7 @@ const UserInfoHeader = ({ t, userState }) => {
                       >
                         {t('超级管理员')}
                       </Tag>
-                    ) : isAdmin() ? (
+                    ) : userState.user?.role >= 10 ? (
                       <Tag
                         size='large'
                         shape='circle'

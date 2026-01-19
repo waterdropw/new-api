@@ -153,7 +153,7 @@ const FooterBar = () => {
                 </div>
               </div>
 
-              <div className='text-left'>
+              {/* <div className='text-left'>
                 <p className='!text-semi-color-text-0 font-semibold mb-5'>
                   {t('友情链接')}
                 </p>
@@ -183,7 +183,7 @@ const FooterBar = () => {
                     GPT-Load
                   </a>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
@@ -200,12 +200,12 @@ const FooterBar = () => {
               {t('设计与开发由')}{' '}
             </span>
             <a
-              href='https://github.com/QuantumNous/new-api'
+              href='https://three-body.com.cn'
               target='_blank'
               rel='noopener noreferrer'
               className='!text-semi-color-primary font-medium'
             >
-              New API
+              Neurizon Technolegies Co., Ltd.
             </a>
           </div>
         </div>
@@ -229,12 +229,12 @@ const FooterBar = () => {
           <div className='absolute bottom-2 right-4 text-xs !text-semi-color-text-2 opacity-70'>
             <span>{t('设计与开发由')} </span>
             <a
-              href='https://github.com/QuantumNous/new-api'
+              href='https://three-body.com.cn'
               target='_blank'
               rel='noopener noreferrer'
               className='!text-semi-color-primary font-medium'
             >
-              New API
+              Neurizon Technolegies Co., Ltd.
             </a>
           </div>
         </div>

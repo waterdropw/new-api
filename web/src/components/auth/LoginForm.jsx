@@ -215,6 +215,7 @@ const LoginForm = () => {
           }
 
           userDispatch({ type: 'login', payload: data });
+          localStorage.setItem('user', JSON.stringify(data));
           setUserData(data);
           updateAPI();
           showSuccess('登录成功！');
@@ -406,6 +407,7 @@ const LoginForm = () => {
       const finish = finishRes.data;
       if (finish.success) {
         userDispatch({ type: 'login', payload: finish.data });
+        localStorage.setItem('user', JSON.stringify(finish.data));
         setUserData(finish.data);
         updateAPI();
         showSuccess('登录成功！');
@@ -441,6 +443,7 @@ const LoginForm = () => {
   // 2FA验证成功处理
   const handle2FASuccess = (data) => {
     userDispatch({ type: 'login', payload: data });
+    localStorage.setItem('user', JSON.stringify(data));
     setUserData(data);
     updateAPI();
     showSuccess('登录成功！');

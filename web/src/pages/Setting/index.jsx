@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Layout, TabPane, Tabs } from '@douyinfe/semi-ui';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 
 import SystemSetting from '../../components/settings/SystemSetting';
-import { isRoot } from '../../helpers';
+import { UserContext } from '../../context/User';
 import OtherSetting from '../../components/settings/OtherSetting';
 import OperationSetting from '../../components/settings/OperationSetting';
 import RateLimitSetting from '../../components/settings/RateLimitSetting';
@@ -53,9 +53,11 @@ const Setting = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [tabActiveKey, setTabActiveKey] = useState('1');
+  const [userState] = useContext(UserContext);
+  const isRootUser = userState.user?.role >= 100;
   let panes = [];
 
-  if (isRoot()) {
+  if (isRootUser) {
     panes.push({
       tab: (
         <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
