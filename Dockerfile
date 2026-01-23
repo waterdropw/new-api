@@ -1,4 +1,4 @@
-FROM oven/bun:latest AS builder
+FROM oven/bun:1.1 AS builder
 
 WORKDIR /build
 COPY web/package.json .
@@ -10,6 +10,7 @@ RUN DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat VERSION) bun run b
 
 FROM golang:alpine AS builder2
 ENV GO111MODULE=on CGO_ENABLED=0
+ENV GOPROXY=https://goproxy.cn,https://goproxy.io,https://proxy.golang.org,direct
 
 ARG TARGETOS
 ARG TARGETARCH
