@@ -118,14 +118,22 @@ func SetApiRouter(router *gin.Engine) {
 				adminRoute.DELETE("/:id/2fa", controller.AdminDisable2FA)
 			}
 		}
-		optionRoute := apiRouter.Group("/option")
-		optionRoute.Use(middleware.RootAuth())
-		{
-			optionRoute.GET("/", controller.GetOptions)
-			optionRoute.PUT("/", controller.UpdateOption)
-			optionRoute.POST("/rest_model_ratio", controller.ResetModelRatio)
-			optionRoute.POST("/migrate_console_setting", controller.MigrateConsoleSetting) // 用于迁移检测的旧键，下个版本会删除
-		}
+	optionRoute := apiRouter.Group("/option")
+	optionRoute.Use(middleware.RootAuth())
+	{
+		optionRoute.GET("/", controller.GetOptions)
+		optionRoute.PUT("/", controller.UpdateOption)
+		optionRoute.POST("/rest_model_ratio", controller.ResetModelRatio)
+		optionRoute.POST("/migrate_console_setting", controller.MigrateConsoleSetting) // 用于迁移检测的旧键，下个版本会删除
+
+		// Performance setting routes - 新增性能设置接口
+		optionRoute.GET("/performance", controller.GetPerformanceSetting)
+		optionRoute.PUT("/performance", controller.UpdatePerformanceSetting)
+
+		// Retry setting routes - 新增重试设置接口
+		optionRoute.GET("/retry", controller.GetRetrySetting)
+		optionRoute.PUT("/retry", controller.UpdateRetrySetting)
+	}
 		ratioSyncRoute := apiRouter.Group("/ratio_sync")
 		ratioSyncRoute.Use(middleware.RootAuth())
 		{

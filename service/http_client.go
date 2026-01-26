@@ -10,15 +10,19 @@ import (
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/system_setting"
 
 	"golang.org/x/net/proxy"
 )
 
 var (
-	httpClient      *http.Client
-	proxyClientLock sync.Mutex
-	proxyClients    = make(map[string]*http.Client)
+	httpClient         *http.Client
+	proxyClientLock    sync.Mutex
+	proxyClients       = make(map[string]*http.Client)
+	httpClientLock     sync.RWMutex // 保护 httpClient 的读写
+	lastUpdateTime     time.Time    // 上次更新连接池配置的时间
+	updateCheckInterval = 5 * time.Minute // 检查配置更新的间隔
 )
 
 func checkRedirect(req *http.Request, via []*http.Request) error {
@@ -34,12 +38,11 @@ func checkRedirect(req *http.Request, via []*http.Request) error {
 }
 
 func InitHttpClient() {
-	transport := &http.Transport{
-		MaxIdleConns:        common.RelayMaxIdleConns,
-		MaxIdleConnsPerHost: common.RelayMaxIdleConnsPerHost,
-		ForceAttemptHTTP2:   true,
-		Proxy:               http.ProxyFromEnvironment, // Support HTTP_PROXY, HTTPS_PROXY, NO_PROXY env vars
-	}
+	httpClientLock.Lock()
+	defer httpClientLock.Unlock()
+	
+	transport := createHttpTransport()
+	lastUpdateTime = time.Now()
 
 	if common.RelayTimeout == 0 {
 		httpClient = &http.Client{
@@ -55,7 +58,80 @@ func InitHttpClient() {
 	}
 }
 
+// createHttpTransport 创建 HTTP Transport，应用性能设置
+func createHttpTransport() *http.Transport {
+	perfSetting := operation_setting.GetPerformanceSetting()
+	
+	maxIdleConns := common.RelayMaxIdleConns
+	maxIdleConnsPerHost := common.RelayMaxIdleConnsPerHost
+	
+	// 如果启用了连接池优化，使用性能设置中的参数
+	if perfSetting.EnableConnectionPoolOptimization {
+		if perfSetting.MaxIdleConns > 0 {
+			maxIdleConns = perfSetting.MaxIdleConns
+		}
+		if perfSetting.MaxIdleConnsPerHost > 0 {
+			maxIdleConnsPerHost = perfSetting.MaxIdleConnsPerHost
+		}
+	}
+
+	transport := &http.Transport{
+		MaxIdleConns:          maxIdleConns,
+		MaxIdleConnsPerHost:   maxIdleConnsPerHost,
+		MaxConnsPerHost:       0, // 无限制
+		IdleConnTimeout:       time.Duration(perfSetting.IdleConnTimeout) * time.Second,
+		ForceAttemptHTTP2:     true,
+		Proxy:                 http.ProxyFromEnvironment,
+		DisableKeepAlives:     false,
+		DisableCompression:    false,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 0,
+	}
+	
+	return transport
+}
+
+// UpdateHttpClientIfNeeded 检查并更新 HTTP 客户端配置（如果配置发生变化）
+func UpdateHttpClientIfNeeded() {
+	// 检查是否需要更新
+	now := time.Now()
+	if now.Sub(lastUpdateTime) < updateCheckInterval {
+		return
+	}
+	
+	httpClientLock.Lock()
+	defer httpClientLock.Unlock()
+	
+	// 再次检查以避免并发问题
+	if time.Now().Sub(lastUpdateTime) < updateCheckInterval {
+		return
+	}
+	
+	oldTransport := httpClient.Transport.(*http.Transport)
+	newTransport := createHttpTransport()
+	
+	// 如果配置有变化，更新客户端
+	if oldTransport.MaxIdleConns != newTransport.MaxIdleConns ||
+		oldTransport.MaxIdleConnsPerHost != newTransport.MaxIdleConnsPerHost {
+		
+		oldTransport.CloseIdleConnections()
+		httpClient.Transport = newTransport
+		common.SysLog("HTTP client connection pool updated")
+	}
+	
+	lastUpdateTime = now
+}
+
 func GetHttpClient() *http.Client {
+	httpClientLock.RLock()
+	defer httpClientLock.RUnlock()
+	
+	// 检查是否需要更新配置
+	if time.Now().Sub(lastUpdateTime) >= updateCheckInterval {
+		// 在后台更新（不阻塞当前请求）
+		go UpdateHttpClientIfNeeded()
+	}
+	
 	return httpClient
 }
 

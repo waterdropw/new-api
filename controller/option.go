@@ -10,6 +10,7 @@ import (
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/setting"
 	"github.com/QuantumNous/new-api/setting/console_setting"
+	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/QuantumNous/new-api/setting/system_setting"
 
@@ -224,4 +225,134 @@ func UpdateOption(c *gin.Context) {
 		"message": "",
 	})
 	return
+}
+
+// GetPerformanceSetting 获取性能设置
+func GetPerformanceSetting(c *gin.Context) {
+	perfSetting := operation_setting.GetPerformanceSetting()
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    perfSetting,
+	})
+}
+
+// UpdatePerformanceSetting 更新性能设置
+func UpdatePerformanceSetting(c *gin.Context) {
+	var perfSetting operation_setting.PerformanceSetting
+	if err := c.BindJSON(&perfSetting); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "invalid request: " + err.Error(),
+		})
+		return
+	}
+
+	// 更新性能设置
+	currentSetting := operation_setting.GetPerformanceSetting()
+	*currentSetting = perfSetting
+
+	// 应用配置到系统
+	if perfSetting.EnableGoroutineAlarm {
+		common.UpdateGoroutinePoolConfig(
+			perfSetting.EnableGoroutineAlarm,
+			perfSetting.MaxGoroutinePerRequest,
+		)
+	}
+
+	// 如果启用了内存优化，可以在这里应用相关配置
+	if perfSetting.EnableMemoryOptimization {
+		common.SysLog("Memory optimization enabled")
+	}
+
+	// 持久化到数据库
+	settingJson, err := json.Marshal(perfSetting)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "failed to marshal setting: " + err.Error(),
+		})
+		return
+	}
+
+	err = model.UpdateOption("performance_setting", string(settingJson))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "failed to update setting: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "performance setting updated successfully",
+	})
+}
+
+// GetRetrySetting 获取重试设置
+func GetRetrySetting(c *gin.Context) {
+	retrySetting := operation_setting.GetRetrySetting()
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    retrySetting,
+	})
+}
+
+// UpdateRetrySetting 更新重试设置
+func UpdateRetrySetting(c *gin.Context) {
+	var retrySetting operation_setting.RetrySetting
+	if err := c.BindJSON(&retrySetting); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "invalid request: " + err.Error(),
+		})
+		return
+	}
+
+	// 验证设置的合理性
+	if retrySetting.MaxRetryAttempts < 0 || retrySetting.MaxRetryAttempts > 10 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "max_retry_attempts must be between 0 and 10",
+		})
+		return
+	}
+
+	if retrySetting.BaseRetryDelayMs < 0 || retrySetting.MaxRetryDelayMs < 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "retry delay must be non-negative",
+		})
+		return
+	}
+
+	// 更新重试设置
+	currentSetting := operation_setting.GetRetrySetting()
+	*currentSetting = retrySetting
+
+	// 持久化到数据库
+	settingJson, err := json.Marshal(retrySetting)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "failed to marshal setting: " + err.Error(),
+		})
+		return
+	}
+
+	err = model.UpdateOption("retry_setting", string(settingJson))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "failed to update setting: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "retry setting updated successfully",
+	})
 }

@@ -28,10 +28,34 @@ const (
 )
 
 func getScannerBufferSize() int {
+	perfSetting := operation_setting.GetPerformanceSetting()
+	
+	// 如果启用了流模式优化，使用性能设置中的缓冲区大小
+	if perfSetting.StreamModeEnabled && perfSetting.StreamBufferSizeKB > 0 {
+		return perfSetting.StreamBufferSizeKB << 10
+	}
+	
 	if constant.StreamScannerMaxBufferMB > 0 {
 		return constant.StreamScannerMaxBufferMB << 20
 	}
 	return DefaultMaxScannerBufferSize
+}
+
+// getInitialScannerBufferSize 获取初始扫描缓冲区大小
+func getInitialScannerBufferSize() int {
+	perfSetting := operation_setting.GetPerformanceSetting()
+	
+	// 流模式优化：减少初始缓冲区大小
+	if perfSetting.StreamModeEnabled {
+		// 初始缓冲区使用较小的值，动态扩展
+		chunkSize := perfSetting.StreamChunkSizeBytes
+		if chunkSize > 0 {
+			return chunkSize
+		}
+		return 4096 // 默认 4KB
+	}
+	
+	return InitialScannerBufferSize
 }
 
 func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, dataHandler func(data string) bool) {
@@ -104,9 +128,19 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 		close(stopChan)
 	}()
 
-	scanner.Buffer(make([]byte, InitialScannerBufferSize), getScannerBufferSize())
+	// 根据性能设置调整缓冲区大小
+	initialBufSize := getInitialScannerBufferSize()
+	maxBufSize := getScannerBufferSize()
+	scanner.Buffer(make([]byte, initialBufSize), maxBufSize)
 	scanner.Split(bufio.ScanLines)
 	SetEventStreamHeaders(c)
+	
+	// 应用背压控制（如果启用）
+	backPressureEnabled := operation_setting.ShouldApplyBackPressure()
+	var backPressureChan chan struct{}
+	if backPressureEnabled {
+		backPressureChan = make(chan struct{}, 10) // 允许缓冲 10 个块
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -220,12 +254,33 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 			if !strings.HasPrefix(data, "[DONE]") {
 				info.SetFirstResponseTime()
 
+				// 背压控制：限制缓冲区中的数据块数量
+				if backPressureEnabled && backPressureChan != nil {
+					select {
+					case backPressureChan <- struct{}{}:
+						// 成功添加到背压通道
+					case <-ctx.Done():
+						return
+					case <-stopChan:
+						return
+					}
+				}
+
 				// 使用超时机制防止写操作阻塞
 				done := make(chan bool, 1)
 				go func() {
 					writeMutex.Lock()
 					defer writeMutex.Unlock()
 					done <- dataHandler(data)
+					
+					// 背压控制：处理完毕后释放一个位置
+					if backPressureEnabled && backPressureChan != nil {
+						select {
+						case <-backPressureChan:
+						case <-ctx.Done():
+						case <-stopChan:
+						}
+					}
 				}()
 
 				select {
