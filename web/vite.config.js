@@ -63,6 +63,7 @@ export default defineConfig({
         '.json': 'json',
       },
     },
+    exclude: ['@douyinfe/semi-ui', '@douyinfe/semi-icons'],
   },
   build: {
     rollupOptions: {

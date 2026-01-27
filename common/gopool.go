@@ -27,7 +27,7 @@ var (
 func init() {
 	// 从性能设置中读取配置（动态初始化）
 	poolSize := getGoroutinePoolSize()
-	relayGoPool = gopool.NewPool("gopool.RelayPool", poolSize, gopool.NewConfig())
+	relayGoPool = gopool.NewPool("gopool.RelayPool", int32(poolSize), gopool.NewConfig())
 	relayGoPool.SetPanicHandler(func(ctx context.Context, i interface{}) {
 		atomic.AddInt64(&currentGoroutineCount, -1)
 		if stopChan, ok := ctx.Value("stop_chan").(chan bool); ok {
