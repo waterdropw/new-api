@@ -49,12 +49,18 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
+	// 检查是否启用了任何在线充值方式（Epay、支付宝直连、微信直连）
+	epayEnabled := operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != ""
+	alipayDirectEnabled := operation_setting.AlipayEnabled
+	wxpayDirectEnabled := operation_setting.WxpayEnabled
+	enableOnlineTopup := epayEnabled || alipayDirectEnabled || wxpayDirectEnabled
+
 	data := gin.H{
-		"enable_online_topup":  operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != "",
+		"enable_online_topup":  enableOnlineTopup,
 		"enable_stripe_topup":  setting.StripeApiSecret != "" && setting.StripeWebhookSecret != "" && setting.StripePriceId != "",
 		"enable_creem_topup":   setting.CreemApiKey != "" && setting.CreemProducts != "[]",
-		"enable_alipay_direct": operation_setting.AlipayEnabled,
-		"enable_wxpay_direct":  operation_setting.WxpayEnabled,
+		"enable_alipay_direct": alipayDirectEnabled,
+		"enable_wxpay_direct":  wxpayDirectEnabled,
 		"creem_products":       setting.CreemProducts,
 		"pay_methods":          payMethods,
 		"min_topup":            operation_setting.MinTopUp,
