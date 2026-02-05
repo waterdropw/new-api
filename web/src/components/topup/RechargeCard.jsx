@@ -226,13 +226,13 @@ const RechargeCard = ({
               initValues={{ topUpCount: topUpCount }}
             >
               <div className='space-y-6'>
-                {(enableOnlineTopUp || enableStripeTopUp) && (
+                {(enableOnlineTopUp || enableStripeTopUp || props.enableAlipayDirect || props.enableWxpayDirect) && (
                   <Row gutter={12}>
                     <Col xs={24} sm={24} md={24} lg={10} xl={10}>
                       <Form.InputNumber
                         field='topUpCount'
                         label={t('充值数量')}
-                        disabled={!enableOnlineTopUp && !enableStripeTopUp}
+                        disabled={!enableOnlineTopUp && !enableStripeTopUp && !props.enableAlipayDirect && !props.enableWxpayDirect}
                         placeholder={
                           t('充值数量，最低 ') + renderQuotaWithAmount(minTopUp)
                         }

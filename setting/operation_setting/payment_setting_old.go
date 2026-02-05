@@ -17,6 +17,21 @@ var Price = 7.3
 var MinTopUp = 1
 var USDExchangeRate = 7.3
 
+// 支付宝直连配置
+var AlipayEnabled = false
+var AlipayAppId = ""
+var AlipayPrivateKey = ""
+var AlipayPublicKey = ""
+var AlipayIsProd = false
+
+// 微信支付直连配置
+var WxpayEnabled = false
+var WxpayAppId = ""
+var WxpayMchId = ""
+var WxpayApiV3Key = ""
+var WxpayCertSerial = ""
+var WxpayPrivateKey = ""
+
 var PayMethods = []map[string]string{
 	{
 		"name":  "支付宝",

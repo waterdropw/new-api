@@ -153,7 +153,7 @@ const FooterBar = () => {
                 </div>
               </div>
 
-              {/* <div className='text-left'>
+              <div className='text-left'>
                 <p className='!text-semi-color-text-0 font-semibold mb-5'>
                   {t('友情链接')}
                 </p>
@@ -183,7 +183,7 @@ const FooterBar = () => {
                     GPT-Load
                   </a>
                 </div>
-              </div> */}
+              </div>
             </div>
           </div>
         )}
@@ -205,7 +205,7 @@ const FooterBar = () => {
               rel='noopener noreferrer'
               className='!text-semi-color-primary font-medium'
             >
-              Neurizon Technolegies Co., Ltd.
+              Neurizon Technologies Co., Ltd.
             </a>
           </div>
         </div>
@@ -234,7 +234,7 @@ const FooterBar = () => {
               rel='noopener noreferrer'
               className='!text-semi-color-primary font-medium'
             >
-              Neurizon Technolegies Co., Ltd.
+              Neurizon Technologies Co., Ltd.
             </a>
           </div>
         </div>

@@ -88,6 +88,17 @@ func InitOptionMap() {
 	common.OptionMap["CreemProducts"] = setting.CreemProducts
 	common.OptionMap["CreemTestMode"] = strconv.FormatBool(setting.CreemTestMode)
 	common.OptionMap["CreemWebhookSecret"] = setting.CreemWebhookSecret
+	common.OptionMap["AlipayEnabled"] = strconv.FormatBool(operation_setting.AlipayEnabled)
+	common.OptionMap["AlipayAppId"] = ""
+	common.OptionMap["AlipayPrivateKey"] = ""
+	common.OptionMap["AlipayPublicKey"] = ""
+	common.OptionMap["AlipayIsProd"] = strconv.FormatBool(operation_setting.AlipayIsProd)
+	common.OptionMap["WxpayEnabled"] = strconv.FormatBool(operation_setting.WxpayEnabled)
+	common.OptionMap["WxpayAppId"] = ""
+	common.OptionMap["WxpayMchId"] = ""
+	common.OptionMap["WxpayApiV3Key"] = ""
+	common.OptionMap["WxpayCertSerial"] = ""
+	common.OptionMap["WxpayPrivateKey"] = ""
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
 	common.OptionMap["AutoGroups"] = setting.AutoGroups2JsonString()
@@ -294,6 +305,12 @@ func updateOptionMap(key string, value string) (err error) {
 			setting.DefaultUseAutoGroup = boolValue
 		case "ExposeRatioEnabled":
 			ratio_setting.SetExposeRatioEnabled(boolValue)
+		case "AlipayEnabled":
+			operation_setting.AlipayEnabled = boolValue
+		case "AlipayIsProd":
+			operation_setting.AlipayIsProd = boolValue
+		case "WxpayEnabled":
+			operation_setting.WxpayEnabled = boolValue
 		}
 	}
 	switch key {
@@ -354,6 +371,22 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.CreemTestMode = value == "true"
 	case "CreemWebhookSecret":
 		setting.CreemWebhookSecret = value
+	case "AlipayAppId":
+		operation_setting.AlipayAppId = value
+	case "AlipayPrivateKey":
+		operation_setting.AlipayPrivateKey = value
+	case "AlipayPublicKey":
+		operation_setting.AlipayPublicKey = value
+	case "WxpayAppId":
+		operation_setting.WxpayAppId = value
+	case "WxpayMchId":
+		operation_setting.WxpayMchId = value
+	case "WxpayApiV3Key":
+		operation_setting.WxpayApiV3Key = value
+	case "WxpayCertSerial":
+		operation_setting.WxpayCertSerial = value
+	case "WxpayPrivateKey":
+		operation_setting.WxpayPrivateKey = value
 	case "TopupGroupRatio":
 		err = common.UpdateTopupGroupRatioByJSONString(value)
 	case "GitHubClientId":

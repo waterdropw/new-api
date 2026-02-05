@@ -38,6 +38,7 @@ import InvitationCard from './InvitationCard';
 import TransferModal from './modals/TransferModal';
 import PaymentConfirmModal from './modals/PaymentConfirmModal';
 import TopupHistoryModal from './modals/TopupHistoryModal';
+import QRCodePaymentModal from './modals/QRCodePaymentModal';
 
 const TopUp = () => {
   const { t } = useTranslation();
@@ -62,6 +63,18 @@ const TopUp = () => {
     statusState?.status?.enable_stripe_topup || false,
   );
   const [statusLoading, setStatusLoading] = useState(true);
+
+  // 直连支付状态
+  const [enableAlipayDirect, setEnableAlipayDirect] = useState(false);
+  const [enableWxpayDirect, setEnableWxpayDirect] = useState(false);
+  const [qrCodeOpen, setQrCodeOpen] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState({
+    qrCode: '',
+    tradeNo: '',
+    paymentMethod: '',
+    amount: 0,
+    payMoney: 0,
+  });
 
   // Creem 相关状态
   const [creemProducts, setCreemProducts] = useState([]);
@@ -142,9 +155,23 @@ const TopUp = () => {
   };
 
   const preTopUp = async (payment) => {
+    // 检查直连支付
+    const isAlipayDirect = payment === 'alipay_direct';
+    const isWxpayDirect = payment === 'wxpay_direct';
+    
     if (payment === 'stripe') {
       if (!enableStripeTopUp) {
         showError(t('管理员未开启Stripe充值！'));
+        return;
+      }
+    } else if (isAlipayDirect) {
+      if (!enableAlipayDirect) {
+        showError(t('管理员未开启支付宝直连支付！'));
+        return;
+      }
+    } else if (isWxpayDirect) {
+      if (!enableWxpayDirect) {
+        showError(t('管理员未开启微信直连支付！'));
         return;
       }
     } else {
@@ -167,7 +194,13 @@ const TopUp = () => {
         showError(t('充值数量不能小于') + minTopUp);
         return;
       }
-      setOpen(true);
+
+      // 如果是直连支付，直接调用支付接口
+      if (isAlipayDirect || isWxpayDirect) {
+        await onlineTopUpDirect(payment);
+      } else {
+        setOpen(true);
+      }
     } catch (error) {
       showError(t('获取金额失败'));
     } finally {
@@ -251,6 +284,61 @@ const TopUp = () => {
     } finally {
       setOpen(false);
       setConfirmLoading(false);
+    }
+  };
+
+  // 直连支付处理函数
+  const onlineTopUpDirect = async (paymentMethod) => {
+    if (topUpCount < minTopUp) {
+      showError(t('充值数量不能小于') + minTopUp);
+      return;
+    }
+
+    setConfirmLoading(true);
+    try {
+      let endpoint = '';
+      if (paymentMethod === 'alipay_direct') {
+        endpoint = '/api/user/alipay/direct';
+      } else if (paymentMethod === 'wxpay_direct') {
+        endpoint = '/api/user/wxpay/direct';
+      }
+
+      const res = await API.post(endpoint, {
+        amount: parseInt(topUpCount),
+        payment_method: paymentMethod,
+      });
+
+      if (res !== undefined) {
+        const { message, data } = res.data;
+        if (message === 'success') {
+          // 显示二维码
+          setQrCodeData({
+            qrCode: data.qr_code,
+            tradeNo: data.trade_no,
+            paymentMethod: paymentMethod,
+            amount: topUpCount,
+            payMoney: amount,
+          });
+          setQrCodeOpen(true);
+        } else {
+          showError(data);
+        }
+      } else {
+        showError(t('请求失败'));
+      }
+    } catch (error) {
+      showError(t('请求失败: ') + (error.message || ''));
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const handleQRCodeClose = (paymentSuccess) => {
+    setQrCodeOpen(false);
+    if (paymentSuccess) {
+      showSuccess(t('支付成功！'));
+      // 刷新用户信息
+      getUserData();
     }
   };
 
@@ -378,6 +466,10 @@ const TopUp = () => {
           const enableStripeTopUp = data.enable_stripe_topup || false;
           const enableOnlineTopUp = data.enable_online_topup || false;
           const enableCreemTopUp = data.enable_creem_topup || false;
+          const enableAlipayDirectVal = data.enable_alipay_direct || false;
+          const enableWxpayDirectVal = data.enable_wxpay_direct || false;
+          setEnableAlipayDirect(enableAlipayDirectVal);
+          setEnableWxpayDirect(enableWxpayDirectVal);
           const minTopUpValue = enableOnlineTopUp
             ? data.min_topup
             : enableStripeTopUp
@@ -662,6 +754,18 @@ const TopUp = () => {
         )}
       </Modal>
 
+      {/* 二维码支付模态框 */}
+      <QRCodePaymentModal
+        t={t}
+        open={qrCodeOpen}
+        onCancel={handleQRCodeClose}
+        qrCode={qrCodeData.qrCode}
+        tradeNo={qrCodeData.tradeNo}
+        paymentMethod={qrCodeData.paymentMethod}
+        amount={qrCodeData.amount}
+        payMoney={qrCodeData.payMoney}
+      />
+
       {/* 用户信息头部 */}
       <div className='space-y-6'>
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
@@ -672,6 +776,8 @@ const TopUp = () => {
               enableOnlineTopUp={enableOnlineTopUp}
               enableStripeTopUp={enableStripeTopUp}
               enableCreemTopUp={enableCreemTopUp}
+              enableAlipayDirect={enableAlipayDirect}
+              enableWxpayDirect={enableWxpayDirect}
               creemProducts={creemProducts}
               creemPreTopUp={creemPreTopUp}
               presetAmounts={presetAmounts}

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/url"
@@ -49,15 +50,17 @@ func GetTopUpInfo(c *gin.Context) {
 	}
 
 	data := gin.H{
-		"enable_online_topup": operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != "",
-		"enable_stripe_topup": setting.StripeApiSecret != "" && setting.StripeWebhookSecret != "" && setting.StripePriceId != "",
-		"enable_creem_topup":  setting.CreemApiKey != "" && setting.CreemProducts != "[]",
-		"creem_products":      setting.CreemProducts,
-		"pay_methods":         payMethods,
-		"min_topup":           operation_setting.MinTopUp,
-		"stripe_min_topup":    setting.StripeMinTopUp,
-		"amount_options":      operation_setting.GetPaymentSetting().AmountOptions,
-		"discount":            operation_setting.GetPaymentSetting().AmountDiscount,
+		"enable_online_topup":  operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != "",
+		"enable_stripe_topup":  setting.StripeApiSecret != "" && setting.StripeWebhookSecret != "" && setting.StripePriceId != "",
+		"enable_creem_topup":   setting.CreemApiKey != "" && setting.CreemProducts != "[]",
+		"enable_alipay_direct": operation_setting.AlipayEnabled,
+		"enable_wxpay_direct":  operation_setting.WxpayEnabled,
+		"creem_products":       setting.CreemProducts,
+		"pay_methods":          payMethods,
+		"min_topup":            operation_setting.MinTopUp,
+		"stripe_min_topup":     setting.StripeMinTopUp,
+		"amount_options":       operation_setting.GetPaymentSetting().AmountOptions,
+		"discount":             operation_setting.GetPaymentSetting().AmountDiscount,
 	}
 	common.ApiSuccess(c, data)
 }
@@ -389,4 +392,322 @@ func AdminCompleteTopUp(c *gin.Context) {
 		return
 	}
 	common.ApiSuccess(c, nil)
+}
+
+// RequestAlipayDirect 支付宝直连支付
+func RequestAlipayDirect(c *gin.Context) {
+	var req EpayRequest
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
+		return
+	}
+	if req.Amount < getMinTopup() {
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
+		return
+	}
+
+	id := c.GetInt("id")
+	group, err := model.GetUserGroup(id, true)
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
+		return
+	}
+	payMoney := getPayMoney(req.Amount, group)
+	if payMoney < 0.01 {
+		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
+		return
+	}
+
+	// 生成订单号
+	tradeNo := fmt.Sprintf("%s%d", common.GetRandomString(6), time.Now().Unix())
+	tradeNo = fmt.Sprintf("USR%dNO%s", id, tradeNo)
+
+	// 回调地址
+	callBackAddress := service.GetCallbackAddress()
+	notifyUrl := callBackAddress + "/api/user/alipay/notify"
+
+	// 调用支付宝生成二维码
+	qrCode, err := service.CreateAlipayQRCode(
+		tradeNo,
+		payMoney,
+		fmt.Sprintf("充值%.2f美元", float64(req.Amount)),
+		notifyUrl,
+	)
+	if err != nil {
+		log.Printf("支付宝生成二维码失败: %v", err)
+		c.JSON(200, gin.H{"message": "error", "data": "生成支付二维码失败: " + err.Error()})
+		return
+	}
+
+	// 保存订单
+	amount := req.Amount
+	if operation_setting.GetQuotaDisplayType() == operation_setting.QuotaDisplayTypeTokens {
+		dAmount := decimal.NewFromInt(int64(amount))
+		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+		amount = dAmount.Div(dQuotaPerUnit).IntPart()
+	}
+	topUp := &model.TopUp{
+		UserId:        id,
+		Amount:        amount,
+		Money:         payMoney,
+		TradeNo:       tradeNo,
+		PaymentMethod: "alipay_direct",
+		CreateTime:    time.Now().Unix(),
+		Status:        "pending",
+	}
+	err = topUp.Insert()
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "创建订单失败"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message":  "success",
+		"qr_code":  qrCode,
+		"trade_no": tradeNo,
+	})
+}
+
+// RequestWxpayDirect 微信直连支付
+func RequestWxpayDirect(c *gin.Context) {
+	var req EpayRequest
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
+		return
+	}
+	if req.Amount < getMinTopup() {
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
+		return
+	}
+
+	id := c.GetInt("id")
+	group, err := model.GetUserGroup(id, true)
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
+		return
+	}
+	payMoney := getPayMoney(req.Amount, group)
+	if payMoney < 0.01 {
+		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
+		return
+	}
+
+	// 生成订单号
+	tradeNo := fmt.Sprintf("%s%d", common.GetRandomString(6), time.Now().Unix())
+	tradeNo = fmt.Sprintf("USR%dNO%s", id, tradeNo)
+
+	// 回调地址
+	callBackAddress := service.GetCallbackAddress()
+	notifyUrl := callBackAddress + "/api/user/wxpay/notify"
+
+	// 微信支付金额单位是分
+	wxpayAmount := int64(payMoney * 100)
+
+	// 调用微信支付生成二维码
+	qrCode, err := service.CreateWxpayQRCode(
+		tradeNo,
+		wxpayAmount,
+		fmt.Sprintf("充值%.2f美元", float64(req.Amount)),
+		notifyUrl,
+	)
+	if err != nil {
+		log.Printf("微信支付生成二维码失败: %v", err)
+		c.JSON(200, gin.H{"message": "error", "data": "生成支付二维码失败: " + err.Error()})
+		return
+	}
+
+	// 保存订单
+	amount := req.Amount
+	if operation_setting.GetQuotaDisplayType() == operation_setting.QuotaDisplayTypeTokens {
+		dAmount := decimal.NewFromInt(int64(amount))
+		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+		amount = dAmount.Div(dQuotaPerUnit).IntPart()
+	}
+	topUp := &model.TopUp{
+		UserId:        id,
+		Amount:        amount,
+		Money:         payMoney,
+		TradeNo:       tradeNo,
+		PaymentMethod: "wxpay_direct",
+		CreateTime:    time.Now().Unix(),
+		Status:        "pending",
+	}
+	err = topUp.Insert()
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "创建订单失败"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message":  "success",
+		"qr_code":  qrCode,
+		"trade_no": tradeNo,
+	})
+}
+
+// AlipayNotify 支付宝异步回调
+func AlipayNotify(c *gin.Context) {
+	// 解析表单参数
+	if err := c.Request.ParseForm(); err != nil {
+		log.Println("支付宝回调解析参数失败:", err)
+		c.String(200, "fail")
+		return
+	}
+
+	// 转换为map
+	params := make(map[string]string)
+	for k, v := range c.Request.Form {
+		if len(v) > 0 {
+			params[k] = v[0]
+		}
+	}
+
+	// 验证签名
+	ok, err := service.VerifyAlipayNotify(params)
+	if err != nil || !ok {
+		log.Println("支付宝签名验证失败:", err)
+		c.String(200, "fail")
+		return
+	}
+
+	// 获取订单号和交易状态
+	tradeNo := params["out_trade_no"]
+	tradeStatus := params["trade_status"]
+
+	log.Printf("支付宝回调: 订单号=%s, 状态=%s", tradeNo, tradeStatus)
+
+	// 只有交易成功才处理
+	if tradeStatus == "TRADE_SUCCESS" || tradeStatus == "TRADE_FINISHED" {
+		LockOrder(tradeNo)
+		defer UnlockOrder(tradeNo)
+
+		topUp := model.GetTopUpByTradeNo(tradeNo)
+		if topUp == nil {
+			log.Printf("支付宝回调未找到订单: %s", tradeNo)
+			c.String(200, "success") // 返回success避免支付宝重复通知
+			return
+		}
+
+		if topUp.Status == "pending" {
+			topUp.Status = "success"
+			err := topUp.Update()
+			if err != nil {
+				log.Printf("支付宝回调更新订单失败: %v", topUp)
+				c.String(200, "fail")
+				return
+			}
+
+			// 给用户充值
+			dAmount := decimal.NewFromInt(int64(topUp.Amount))
+			dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+			quotaToAdd := int(dAmount.Mul(dQuotaPerUnit).IntPart())
+			err = model.IncreaseUserQuota(topUp.UserId, quotaToAdd, true)
+			if err != nil {
+				log.Printf("支付宝回调更新用户失败: %v", topUp)
+				c.String(200, "fail")
+				return
+			}
+
+			log.Printf("支付宝回调更新用户成功 %v", topUp)
+			model.RecordLog(topUp.UserId, model.LogTypeTopup, fmt.Sprintf("使用支付宝充值成功，充值金额: %v，支付金额：%.2f", logger.LogQuota(quotaToAdd), topUp.Money))
+		}
+	}
+
+	c.String(200, "success")
+}
+
+// WxpayNotify 微信支付异步回调
+func WxpayNotify(c *gin.Context) {
+	// 获取微信支付通知处理器
+	handler, err := service.GetWxpayNotifyHandler()
+	if err != nil {
+		log.Println("获取微信支付通知处理器失败:", err)
+		c.JSON(500, gin.H{"code": "FAIL", "message": "系统错误"})
+		return
+	}
+
+	// 解析通知内容
+	transaction := new(struct {
+		Mchid          *string `json:"mchid"`
+		Appid          *string `json:"appid"`
+		OutTradeNo     *string `json:"out_trade_no"`
+		TransactionId  *string `json:"transaction_id"`
+		TradeType      *string `json:"trade_type"`
+		TradeState     *string `json:"trade_state"`
+		TradeStateDesc *string `json:"trade_state_desc"`
+		BankType       *string `json:"bank_type"`
+		Attach         *string `json:"attach"`
+		SuccessTime    *string `json:"success_time"`
+		Payer          *struct {
+			Openid *string `json:"openid"`
+		} `json:"payer"`
+		Amount *struct {
+			Total         *int64  `json:"total"`
+			PayerTotal    *int64  `json:"payer_total"`
+			Currency      *string `json:"currency"`
+			PayerCurrency *string `json:"payer_currency"`
+		} `json:"amount"`
+	})
+
+	notifyReq, err := handler.ParseNotifyRequest(context.Background(), c.Request, transaction)
+	if err != nil {
+		log.Println("微信支付回调解析失败:", err)
+		c.JSON(500, gin.H{"code": "FAIL", "message": "解析失败"})
+		return
+	}
+
+	// 新版 SDK 已经在 ParseNotifyRequest 中自动解密了，不需要再调用 DecryptCipherText
+	_ = notifyReq // 标记为已使用
+
+	if transaction.OutTradeNo == nil || transaction.TradeState == nil {
+		log.Println("微信支付回调参数不完整")
+		c.JSON(400, gin.H{"code": "FAIL", "message": "参数错误"})
+		return
+	}
+
+	tradeNo := *transaction.OutTradeNo
+	tradeState := *transaction.TradeState
+
+	log.Printf("微信支付回调: 订单号=%s, 状态=%s", tradeNo, tradeState)
+
+	// 只有交易成功才处理
+	if tradeState == "SUCCESS" {
+		LockOrder(tradeNo)
+		defer UnlockOrder(tradeNo)
+
+		topUp := model.GetTopUpByTradeNo(tradeNo)
+		if topUp == nil {
+			log.Printf("微信支付回调未找到订单: %s", tradeNo)
+			c.JSON(200, gin.H{"code": "SUCCESS", "message": "成功"})
+			return
+		}
+
+		if topUp.Status == "pending" {
+			topUp.Status = "success"
+			err := topUp.Update()
+			if err != nil {
+				log.Printf("微信支付回调更新订单失败: %v", topUp)
+				c.JSON(500, gin.H{"code": "FAIL", "message": "更新订单失败"})
+				return
+			}
+
+			// 给用户充值
+			dAmount := decimal.NewFromInt(int64(topUp.Amount))
+			dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+			quotaToAdd := int(dAmount.Mul(dQuotaPerUnit).IntPart())
+			err = model.IncreaseUserQuota(topUp.UserId, quotaToAdd, true)
+			if err != nil {
+				log.Printf("微信支付回调更新用户失败: %v", topUp)
+				c.JSON(500, gin.H{"code": "FAIL", "message": "更新用户失败"})
+				return
+			}
+
+			log.Printf("微信支付回调更新用户成功 %v", topUp)
+			model.RecordLog(topUp.UserId, model.LogTypeTopup, fmt.Sprintf("使用微信支付充值成功，充值金额: %v，支付金额：%.2f", logger.LogQuota(quotaToAdd), topUp.Money))
+		}
+	}
+
+	c.JSON(200, gin.H{"code": "SUCCESS", "message": "成功"})
 }

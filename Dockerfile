@@ -9,9 +9,11 @@ COPY ./VERSION .
 RUN DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat VERSION) bun run build
 
 FROM golang:alpine AS builder2
-ENV GO111MODULE=on CGO_ENABLED=0
-ENV GOPROXY=https://goproxy.cn,https://goproxy.io,https://proxy.golang.org,direct
+RUN apk add --no-cache git
 
+ENV GO111MODULE=on CGO_ENABLED=0
+# ENV GOPROXY=https://goproxy.cn,https://goproxy.io,https://proxy.golang.org,direct
+ENV GOPROXY=https://mirrors.aliyun.com/goproxy/,https://proxy.golang.org,direct
 ARG TARGETOS
 ARG TARGETARCH
 ENV GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64}
@@ -19,11 +21,9 @@ ENV GOEXPERIMENT=greenteagc
 
 WORKDIR /build
 
-ADD go.mod go.sum ./
-RUN go mod download
-
 COPY . .
 COPY --from=builder /build/dist ./web/dist
+RUN go mod tidy && go mod download
 RUN go build -ldflags "-s -w -X 'github.com/QuantumNous/new-api/common.Version=$(cat VERSION)'" -o new-api
 
 FROM debian:bookworm-slim
