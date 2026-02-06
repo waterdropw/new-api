@@ -98,21 +98,9 @@ func GetEpayClient() *epay.Client {
 
 func getPayMoney(amount int64, group string) float64 {
 	dAmount := decimal.NewFromInt(amount)
-	// 充值金额以“展示类型”为准：
-	// - USD/CNY: 前端传 amount 为金额单位；TOKENS: 前端传 tokens，需要换成 USD 金额
-	if operation_setting.GetQuotaDisplayType() == operation_setting.QuotaDisplayTypeTokens {
-		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
-		dAmount = dAmount.Div(dQuotaPerUnit)
-	}
-
-	topupGroupRatio := common.GetTopupGroupRatio(group)
-	if topupGroupRatio == 0 {
-		topupGroupRatio = 1
-	}
-
-	dTopupGroupRatio := decimal.NewFromFloat(topupGroupRatio)
-	dPrice := decimal.NewFromFloat(operation_setting.Price)
-	// apply optional preset discount by the original request amount (if configured), default 1.0
+	
+	// 现在 amount 就是人民币金额，直接应用折扣即可
+	// 实付金额 = 充值金额 × 折扣
 	discount := 1.0
 	if ds, ok := operation_setting.GetPaymentSetting().AmountDiscount[int(amount)]; ok {
 		if ds > 0 {
@@ -121,7 +109,7 @@ func getPayMoney(amount int64, group string) float64 {
 	}
 	dDiscount := decimal.NewFromFloat(discount)
 
-	payMoney := dAmount.Mul(dPrice).Mul(dTopupGroupRatio).Mul(dDiscount)
+	payMoney := dAmount.Mul(dDiscount)
 
 	return payMoney.InexactFloat64()
 }
@@ -437,7 +425,7 @@ func RequestAlipayDirect(c *gin.Context) {
 	qrCode, err := service.CreateAlipayQRCode(
 		tradeNo,
 		payMoney,
-		fmt.Sprintf("充值%.2f美元", float64(req.Amount)),
+		fmt.Sprintf("充值%.0f元", float64(req.Amount)),
 		notifyUrl,
 	)
 	if err != nil {
@@ -515,7 +503,7 @@ func RequestWxpayDirect(c *gin.Context) {
 	qrCode, err := service.CreateWxpayQRCode(
 		tradeNo,
 		wxpayAmount,
-		fmt.Sprintf("充值%.2f美元", float64(req.Amount)),
+		fmt.Sprintf("充值%.0f元", float64(req.Amount)),
 		notifyUrl,
 	)
 	if err != nil {

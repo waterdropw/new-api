@@ -53,6 +53,8 @@ const RechargeCard = ({
   enableOnlineTopUp,
   enableStripeTopUp,
   enableCreemTopUp,
+  enableAlipayDirect,
+  enableWxpayDirect,
   creemProducts,
   creemPreTopUp,
   presetAmounts,
@@ -226,15 +228,15 @@ const RechargeCard = ({
               initValues={{ topUpCount: topUpCount }}
             >
               <div className='space-y-6'>
-                {(enableOnlineTopUp || enableStripeTopUp || props.enableAlipayDirect || props.enableWxpayDirect) && (
+                {(enableOnlineTopUp || enableStripeTopUp || enableAlipayDirect || enableWxpayDirect) && (
                   <Row gutter={12}>
                     <Col xs={24} sm={24} md={24} lg={10} xl={10}>
                       <Form.InputNumber
                         field='topUpCount'
-                        label={t('充值数量')}
-                        disabled={!enableOnlineTopUp && !enableStripeTopUp && !props.enableAlipayDirect && !props.enableWxpayDirect}
+                        label={t('充值金额（元）')}
+                        disabled={!enableOnlineTopUp && !enableStripeTopUp && !enableAlipayDirect && !enableWxpayDirect}
                         placeholder={
-                          t('充值数量，最低 ') + renderQuotaWithAmount(minTopUp)
+                          t('充值金额，最低 ') + minTopUp + ' 元'
                         }
                         value={topUpCount}
                         min={minTopUp}
@@ -286,68 +288,38 @@ const RechargeCard = ({
                     </Col>
                     <Col xs={24} sm={24} md={24} lg={14} xl={14}>
                       <Form.Slot label={t('选择支付方式')}>
-                        {payMethods && payMethods.length > 0 ? (
+                        {enableAlipayDirect || enableWxpayDirect ? (
                           <Space wrap>
-                            {payMethods.map((payMethod) => {
-                              const minTopupVal =
-                                Number(payMethod.min_topup) || 0;
-                              const isStripe = payMethod.type === 'stripe';
-                              const disabled =
-                                (!enableOnlineTopUp && !isStripe) ||
-                                (!enableStripeTopUp && isStripe) ||
-                                minTopupVal > Number(topUpCount || 0);
-
-                              const buttonEl = (
-                                <Button
-                                  key={payMethod.type}
-                                  theme='outline'
-                                  type='tertiary'
-                                  onClick={() => preTopUp(payMethod.type)}
-                                  disabled={disabled}
-                                  loading={
-                                    paymentLoading && payWay === payMethod.type
-                                  }
-                                  icon={
-                                    payMethod.type === 'alipay' ? (
-                                      <SiAlipay size={18} color='#1677FF' />
-                                    ) : payMethod.type === 'wxpay' ? (
-                                      <SiWechat size={18} color='#07C160' />
-                                    ) : payMethod.type === 'stripe' ? (
-                                      <SiStripe size={18} color='#635BFF' />
-                                    ) : (
-                                      <CreditCard
-                                        size={18}
-                                        color={
-                                          payMethod.color ||
-                                          'var(--semi-color-text-2)'
-                                        }
-                                      />
-                                    )
-                                  }
-                                  className='!rounded-lg !px-4 !py-2'
-                                >
-                                  {payMethod.name}
-                                </Button>
-                              );
-
-                              return disabled &&
-                                minTopupVal > Number(topUpCount || 0) ? (
-                                <Tooltip
-                                  content={
-                                    t('此支付方式最低充值金额为') +
-                                    ' ' +
-                                    minTopupVal
-                                  }
-                                  key={payMethod.type}
-                                >
-                                  {buttonEl}
-                                </Tooltip>
-                              ) : (
-                                <React.Fragment key={payMethod.type}>
-                                  {buttonEl}
-                                </React.Fragment>
-                              );
-                            })}
+                            {enableAlipayDirect && (
+                              <Button
+                                theme='outline'
+                                type='tertiary'
+                                onClick={() => preTopUp('alipay_direct')}
+                                disabled={topUpCount < minTopUp}
+                                loading={
+                                  paymentLoading && payWay === 'alipay_direct'
+                                }
+                                icon={<SiAlipay size={18} color='#1677FF' />}
+                                className='!rounded-lg !px-4 !py-2'
+                              >
+                                {t('支付宝')}
+                              </Button>
+                            )}
+                            {enableWxpayDirect && (
+                              <Button
+                                theme='outline'
+                                type='tertiary'
+                                onClick={() => preTopUp('wxpay_direct')}
+                                disabled={topUpCount < minTopUp}
+                                loading={
+                                  paymentLoading && payWay === 'wxpay_direct'
+                                }
+                                icon={<SiWechat size={18} color='#07C160' />}
+                                className='!rounded-lg !px-4 !py-2'
+                              >
+                                {t('微信')}
+                              </Button>
+                            )}
                           </Space>
                         ) : (
                           <div className='text-gray-500 text-sm p-3 bg-gray-50 rounded-lg border border-dashed border-gray-300'>
@@ -363,23 +335,7 @@ const RechargeCard = ({
                   <Form.Slot
                     label={
                       <div className='flex items-center gap-2'>
-                        <span>{t('选择充值额度')}</span>
-                        {(() => {
-                          const { symbol, rate, type } = getCurrencyConfig();
-                          if (type === 'USD') return null;
-
-                          return (
-                            <span
-                              style={{
-                                color: 'var(--semi-color-text-2)',
-                                fontSize: '12px',
-                                fontWeight: 'normal',
-                              }}
-                            >
-                              (1 $ = {rate.toFixed(2)} {symbol})
-                            </span>
-                          );
-                        })()}
+                        <span>{t('选择充值金额')}</span>
                       </div>
                     }
                   >
@@ -389,40 +345,13 @@ const RechargeCard = ({
                           preset.discount ||
                           topupInfo?.discount?.[preset.value] ||
                           1.0;
-                        const originalPrice = preset.value * priceRatio;
-                        const discountedPrice = originalPrice * discount;
                         const hasDiscount = discount < 1.0;
-                        const actualPay = discountedPrice;
-                        const save = originalPrice - discountedPrice;
-
-                        // 根据当前货币类型换算显示金额和数量
-                        const { symbol, rate, type } = getCurrencyConfig();
-                        const statusStr = localStorage.getItem('status');
-                        let usdRate = 7; // 默认CNY汇率
-                        try {
-                          if (statusStr) {
-                            const s = JSON.parse(statusStr);
-                            usdRate = s?.usd_exchange_rate || 7;
-                          }
-                        } catch (e) {}
-
-                        let displayValue = preset.value; // 显示的数量
-                        let displayActualPay = actualPay;
-                        let displaySave = save;
-
-                        if (type === 'USD') {
-                          // 数量保持USD，价格从CNY转USD
-                          displayActualPay = actualPay / usdRate;
-                          displaySave = save / usdRate;
-                        } else if (type === 'CNY') {
-                          // 数量转CNY，价格已是CNY
-                          displayValue = preset.value * usdRate;
-                        } else if (type === 'CUSTOM') {
-                          // 数量和价格都转自定义货币
-                          displayValue = preset.value * rate;
-                          displayActualPay = (actualPay / usdRate) * rate;
-                          displaySave = (save / usdRate) * rate;
-                        }
+                        
+                        // 现在 preset.value 就是人民币金额
+                        const displayValue = preset.value; // 充值金额（元）
+                        const displayActualPay = preset.value * discount; // 实付金额 = 充值金额 × 折扣
+                        const displaySave = preset.value * (1 - discount); // 节省金额
+                        const symbol = '¥'; // 人民币符号
 
                         return (
                           <Card

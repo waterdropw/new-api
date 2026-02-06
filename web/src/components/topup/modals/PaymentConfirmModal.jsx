@@ -65,10 +65,10 @@ const PaymentConfirmModal = ({
           <div className='space-y-3'>
             <div className='flex justify-between items-center'>
               <Text strong className='text-slate-700 dark:text-slate-200'>
-                {t('充值数量')}：
+                {t('充值金额')}：
               </Text>
               <Text className='text-slate-900 dark:text-slate-100'>
-                {renderQuotaWithAmount(topUpCount)}
+                ¥{topUpCount}
               </Text>
             </div>
             <div className='flex justify-between items-center'>
