@@ -41,7 +41,7 @@ const { Sider, Content, Header } = Layout;
 
 const PageLayout = () => {
   const [, userDispatch] = useContext(UserContext);
-  const [, statusDispatch] = useContext(StatusContext);
+  const [statusState, statusDispatch] = useContext(StatusContext);
   const isMobile = useIsMobile();
   const [collapsed, , setCollapsed] = useSidebarCollapsed();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -118,6 +118,12 @@ const PageLayout = () => {
       i18n.changeLanguage(savedLang);
     }
   }, [i18n]);
+
+  useEffect(() => {
+    if (statusState?.status?.system_name) {
+      document.title = statusState.status.system_name;
+    }
+  }, [statusState?.status?.system_name]);
 
   return (
     <Layout
