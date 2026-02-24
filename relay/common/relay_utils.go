@@ -32,6 +32,8 @@ func GetFullRequestURL(baseURL string, requestURL string, channelType int) strin
 		case constant.ChannelTypeAzure:
 			fullRequestURL = fmt.Sprintf("%s%s", baseURL, strings.TrimPrefix(requestURL, "/openai/deployments"))
 		}
+	} else if strings.HasPrefix(baseURL, "https://wanqing.streamlakeapi.com") {
+		fullRequestURL = fmt.Sprintf("%s%s", baseURL, strings.TrimPrefix(requestURL, "/v1"))
 	}
 	return fullRequestURL
 }
