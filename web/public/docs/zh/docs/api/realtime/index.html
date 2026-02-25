@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>实时语音（Realtime）接口 | New API</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --bg-subtle: #f8fafc;
+        --bg-hover: #f1f5f9;
+        --text: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-bg: #eff6ff;
+        --border: #e2e8f0;
+        --success: #10b981;
+        --success-bg: #ecfdf5;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f172a;
+          --bg-subtle: #1e293b;
+          --bg-hover: #334155;
+          --text: #f8fafc;
+          --text-secondary: #cbd5e1;
+          --text-muted: #94a3b8;
+          --primary: #60a5fa;
+          --primary-hover: #3b82f6;
+          --primary-bg: rgba(59, 130, 246, 0.2);
+          --border: #334155;
+          --success: #34d399;
+          --success-bg: rgba(16, 185, 129, 0.2);
+          --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+          --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+          'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: color 0.15s ease;
+      }
+      a:hover {
+        color: var(--primary-hover);
+      }
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+      @media (max-width: 768px) {
+        .page {
+          padding: 24px 16px 64px;
+        }
+      }
+
+      /* Breadcrumb */
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 24px;
+      }
+      .breadcrumb a {
+        color: var(--text-muted);
+      }
+      .breadcrumb a:hover {
+        color: var(--primary);
+      }
+
+      /* Header */
+      .endpoint-header {
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+      }
+      .subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      /* Section */
+      .section {
+        margin-top: 40px;
+      }
+      .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 16px;
+        color: var(--text);
+      }
+      .section-desc {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      /* Info Box */
+      .info-box {
+        background: var(--primary-bg);
+        border: 1px solid var(--primary);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin: 16px 0;
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 64px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="/docs/zh/docs/api/index.html">API 参考</a>
+        <span>/</span>
+        <span>实时语音</span>
+      </nav>
+
+      <header class="endpoint-header">
+        <h1>实时语音（Realtime）</h1>
+        <p class="subtitle">流式音频 / 实时对话接口，低延迟语音对话体验</p>
+      </header>
+
+      <section class="section">
+        <h2 class="section-title">接口说明</h2>
+        <p class="section-desc">
+          实时语音接口用于构建低延迟的语音对话体验，通常通过 WebSocket 或 streaming HTTP 方式提供连续音频流。
+        </p>
+        <div class="info-box">
+          该接口通常用于实时语音助手、实时翻译等需要低延迟音频交互的场景。
+        </div>
+      </section>
+
+    </main>
+  </body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>API 参考 | New API</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --bg-subtle: #f8fafc;
+        --bg-hover: #f1f5f9;
+        --text: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --border: #e2e8f0;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f172a;
+          --bg-subtle: #1e293b;
+          --bg-hover: #334155;
+          --text: #f8fafc;
+          --text-secondary: #cbd5e1;
+          --text-muted: #94a3b8;
+          --primary: #60a5fa;
+          --primary-hover: #3b82f6;
+          --border: #334155;
+          --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+          --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+          --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+          'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: color 0.15s ease;
+      }
+      a:hover {
+        color: var(--primary-hover);
+      }
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+      }
+      @media (max-width: 768px) {
+        .page {
+          padding: 32px 16px 64px;
+        }
+      }
+
+      /* Header */
+      header {
+        margin-bottom: 48px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--border);
+      }
+      header h1 {
+        margin: 0 0 12px;
+        font-size: 42px;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+      }
+      header .subtitle {
+        color: var(--text-secondary);
+        font-size: 18px;
+        line-height: 1.6;
+        max-width: 640px;
+      }
+
+      /* Section */
+      .section {
+        margin-top: 48px;
+      }
+      .section-header {
+        margin-bottom: 24px;
+      }
+      .section-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0 0 8px;
+        color: var(--text);
+      }
+      .section-desc {
+        color: var(--text-secondary);
+        font-size: 15px;
+        margin: 0;
+      }
+
+      /* Alert/Info Box */
+      .alert {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin: 24px 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .alert-icon {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        color: var(--primary);
+      }
+      .alert-content {
+        flex: 1;
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+
+      /* Grid */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      @media (max-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Card */
+      .card {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+      }
+      .card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+      }
+      .card-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-subtle);
+        border-radius: 10px;
+        margin-bottom: 16px;
+        font-size: 20px;
+      }
+      .card-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 6px;
+      }
+      .card:hover .card-title {
+        color: var(--primary);
+      }
+      .card-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      /* Code Block */
+      .code-block {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 32px;
+      }
+      .code-header {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text);
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          'Liberation Mono', 'Courier New', monospace;
+        font-size: 13px;
+      }
+      pre {
+        background: rgba(15, 23, 42, 0.05);
+        border-radius: 8px;
+        padding: 16px;
+        overflow-x: auto;
+        margin: 0;
+      }
+      @media (prefers-color-scheme: dark) {
+        pre {
+          background: rgba(0, 0, 0, 0.3);
+        }
+      }
+      pre code {
+        background: transparent;
+        padding: 0;
+        color: var(--text);
+      }
+
+      /* Inline Code */
+      :not(pre) > code {
+        background: rgba(15, 23, 42, 0.08);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+      @media (prefers-color-scheme: dark) {
+        :not(pre) > code {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 64px;
+        padding-top: 32px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <h1>API 参考</h1>
+        <p class="subtitle">
+          面向调用者的 AI 模型 API 参考文档。兼容 OpenAI API 格式，支持多种大模型能力调用。
+        </p>
+      </header>
+
+      <section class="section">
+        <div class="alert">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4"></path>
+            <path d="M12 8h.01"></path>
+          </svg>
+          <p class="alert-content">
+            如果你已有兼容 OpenAI API 的调用代码，只需将 <code>base_url</code> 指向当前 API 服务地址 (https://api.neurizon.cn)，并配置对应的令牌，即可直接接入。
+          </p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">AI 模型接口</h2>
+          <p class="section-desc">提供各种大模型能力的统一调用，整体兼容 OpenAI API 格式</p>
+        </div>
+
+        <div class="grid">
+          <a class="card" href="/docs/zh/docs/api/models/index.html">
+            <div class="card-icon">📋</div>
+            <h3 class="card-title">模型列表</h3>
+            <p class="card-desc">获取当前可用的模型列表，包含列出模型详情接口</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/chat/index.html">
+            <div class="card-icon">💬</div>
+            <h3 class="card-title">聊天</h3>
+            <p class="card-desc">对话补全 / Chat 接口，支持多轮对话和流式输出</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/completions/index.html">
+            <div class="card-icon">✍️</div>
+            <h3 class="card-title">补全</h3>
+            <p class="card-desc">传统文本补全接口，兼容 OpenAI Completions</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/embeddings/index.html">
+            <div class="card-icon">🔢</div>
+            <h3 class="card-title">嵌入</h3>
+            <p class="card-desc">文本向量 / Embeddings，用于语义搜索和相似度计算</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/rerank/index.html">
+            <div class="card-icon">📊</div>
+            <h3 class="card-title">重排序</h3>
+            <p class="card-desc">文档 Rerank 与排序接口，优化检索结果</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/moderations/index.html">
+            <div class="card-icon">🛡️</div>
+            <h3 class="card-title">审查</h3>
+            <p class="card-desc">内容安全审核 / Moderation，检测敏感内容</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/audio/index.html">
+            <div class="card-icon">🎵</div>
+            <h3 class="card-title">音频</h3>
+            <p class="card-desc">语音识别与语音合成，支持转录和生成语音</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/realtime/index.html">
+            <div class="card-icon">⚡</div>
+            <h3 class="card-title">实时语音</h3>
+            <p class="card-desc">Realtime / 流式音频接口，低延迟语音对话</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/images/index.html">
+            <div class="card-icon">🖼️</div>
+            <h3 class="card-title">图像</h3>
+            <p class="card-desc">AI 图像生成与编辑，支持文生图能力</p>
+          </a>
+
+          <a class="card" href="/docs/zh/docs/api/videos/index.html">
+            <div class="card-icon">🎬</div>
+            <h3 class="card-title">视频</h3>
+            <p class="card-desc">视频生成和处理接口</p>
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </body>
+</html>

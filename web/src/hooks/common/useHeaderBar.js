@@ -48,7 +48,13 @@ export const useHeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
   const isNewYear = currentDate.getMonth() === 0 && currentDate.getDate() === 1;
 
   const isSelfUseMode = statusState?.status?.self_use_mode_enabled || false;
-  const docsLink = statusState?.status?.docs_link || '';
+
+  // 文档地址：如果没配置或仍指向官方外链，则统一指向本地静态文档
+  const rawDocsLink = statusState?.status?.docs_link || '';
+  const docsLink =
+    !rawDocsLink || rawDocsLink.includes('docs.newapi.pro')
+      ? '/docs/zh/docs'
+      : rawDocsLink;
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
 
   // 获取顶栏模块配置
