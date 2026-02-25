@@ -439,6 +439,17 @@ const RechargeCard = ({
                     </div>
                   </Form.Slot>
                 )}
+
+                {/* 线下对公转账说明 */}
+                <Form.Slot label={t('线下对公转账')}>
+                  <Banner
+                    type='info'
+                    className='!rounded-xl'
+                    description={t(
+                      '如需线下对公转账，请联系销售。在完成对公转账后，我们会为您手动充值到账，通常在 1 小时内生效，节假日可能会有延时。',
+                    )}
+                  />
+                </Form.Slot>
               </div>
             </Form>
           ) : (

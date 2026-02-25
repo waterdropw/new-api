@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -1094,15 +1095,54 @@ func FetchModels(c *gin.Context) {
 		})
 		return
 	}
-	//check status code
-	if response.StatusCode != http.StatusOK {
+	defer response.Body.Close()
+
+	// 读取响应体
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": "Failed to fetch models",
+			"message": fmt.Sprintf("读取响应失败: %s", err.Error()),
 		})
 		return
 	}
-	defer response.Body.Close()
+
+	// 检查状态码
+	if response.StatusCode != http.StatusOK {
+		// 尝试解析错误信息
+		errorMsg := fmt.Sprintf("HTTP %d", response.StatusCode)
+		var errResp struct {
+			Error   interface{} `json:"error"`
+			Message string      `json:"message"`
+		}
+		if json.Unmarshal(body, &errResp) == nil {
+			if errResp.Message != "" {
+				errorMsg = fmt.Sprintf("%s: %s", errorMsg, errResp.Message)
+			} else if errResp.Error != nil {
+				if errStr, ok := errResp.Error.(string); ok {
+					errorMsg = fmt.Sprintf("%s: %s", errorMsg, errStr)
+				} else if errMap, ok := errResp.Error.(map[string]interface{}); ok {
+					if msg, ok := errMap["message"].(string); ok {
+						errorMsg = fmt.Sprintf("%s: %s", errorMsg, msg)
+					}
+				}
+			}
+		} else {
+			// 如果不是JSON，返回原始响应体（限制长度）
+			bodyStr := string(body)
+			if len(bodyStr) > 200 {
+				bodyStr = bodyStr[:200] + "..."
+			}
+			if len(bodyStr) > 0 {
+				errorMsg = fmt.Sprintf("%s: %s", errorMsg, bodyStr)
+			}
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": errorMsg,
+		})
+		return
+	}
 
 	var result struct {
 		Data []struct {
@@ -1110,10 +1150,10 @@ func FetchModels(c *gin.Context) {
 		} `json:"data"`
 	}
 
-	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+	if err := json.Unmarshal(body, &result); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": err.Error(),
+			"message": fmt.Sprintf("解析响应失败: %s", err.Error()),
 		})
 		return
 	}

@@ -152,17 +152,46 @@ func GetResponseBody(method, url string, channel *model.Channel, headers http.He
 	if err != nil {
 		return nil, err
 	}
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code: %d", res.StatusCode)
-	}
+	defer res.Body.Close()
+	
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
-	err = res.Body.Close()
-	if err != nil {
-		return nil, err
+	
+	if res.StatusCode != http.StatusOK {
+		// 尝试解析错误信息
+		errorMsg := fmt.Sprintf("HTTP %d", res.StatusCode)
+		if len(body) > 0 {
+			// 尝试解析JSON错误
+			var errResp struct {
+				Error   interface{} `json:"error"`
+				Message string      `json:"message"`
+			}
+			if json.Unmarshal(body, &errResp) == nil {
+				if errResp.Message != "" {
+					errorMsg = fmt.Sprintf("%s: %s", errorMsg, errResp.Message)
+				} else if errResp.Error != nil {
+					if errStr, ok := errResp.Error.(string); ok {
+						errorMsg = fmt.Sprintf("%s: %s", errorMsg, errStr)
+					} else if errMap, ok := errResp.Error.(map[string]interface{}); ok {
+						if msg, ok := errMap["message"].(string); ok {
+							errorMsg = fmt.Sprintf("%s: %s", errorMsg, msg)
+						}
+					}
+				}
+			} else {
+				// 如果不是JSON，返回原始响应体（限制长度）
+				bodyStr := string(body)
+				if len(bodyStr) > 200 {
+					bodyStr = bodyStr[:200] + "..."
+				}
+				errorMsg = fmt.Sprintf("%s: %s", errorMsg, bodyStr)
+			}
+		}
+		return nil, fmt.Errorf(errorMsg)
 	}
+	
 	return body, nil
 }
 
