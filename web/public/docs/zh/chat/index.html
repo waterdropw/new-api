@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>聊天（Chat）接口</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/docs/zh/shared.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="/docs/zh/index.html">API 参考</a>
+        <span>/</span>
+        <span>聊天</span>
+      </nav>
+
+      <header class="endpoint-header">
+        <div>
+          <span class="method-badge">POST</span>
+          <code class="endpoint-path"><span>/</span>v1<span>/</span>chat<span>/</span>completions</code>
+        </div>
+        <h1>聊天（Chat）</h1>
+        <p class="subtitle">根据对话历史创建模型响应，兼容 OpenAI Chat Completions 格式</p>
+      </header>
+
+      <section class="section">
+        <h2 class="section-title">子页面</h2>
+        <p class="section-desc">聊天接口支持多种格式，请选择适合您需求的格式：</p>
+        <div class="card-grid">
+          <a class="card" href="/docs/zh/chat/createmessage/index.html">
+            <div class="card-icon">🔮</div>
+            <h3 class="card-title">原生Claude格式</h3>
+            <p class="card-desc">Anthropic Claude Messages API 格式的请求</p>
+            <div class="card-arrow">→</div>
+          </a>
+
+          <a class="card" href="/docs/zh/chat/gemini/index.html">
+            <div class="card-icon">♊</div>
+            <h3 class="card-title">原生Gemini格式</h3>
+            <p class="card-desc">Gemini API 原生格式的请求，包含文本聊天和媒体识别</p>
+            <div class="card-arrow">→</div>
+          </a>
+
+          <a class="card" href="/docs/zh/chat/openai/index.html">
+            <div class="card-icon">💬</div>
+            <h3 class="card-title">原生OpenAI格式</h3>
+            <p class="card-desc">OpenAI API 原生格式的请求，包含 ChatCompletions 和 Responses</p>
+            <div class="card-arrow">→</div>
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </body>
+</html>

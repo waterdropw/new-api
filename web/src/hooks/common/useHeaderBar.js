@@ -53,7 +53,7 @@ export const useHeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
   const rawDocsLink = statusState?.status?.docs_link || '';
   const docsLink =
     !rawDocsLink || rawDocsLink.includes('docs.newapi.pro')
-      ? '/docs/zh/docs'
+      ? '/docs/zh'
       : rawDocsLink;
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
 

@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/gin-contrib/static"
 )
@@ -15,12 +16,28 @@ type embedFileSystem struct {
 	http.FileSystem
 }
 
-func (e *embedFileSystem) Exists(prefix string, path string) bool {
-	_, err := e.Open(path)
-	if err != nil {
-		return false
+func (e *embedFileSystem) Exists(prefix string, p string) bool {
+	f, err := e.FileSystem.Open(p)
+	if err == nil {
+		defer f.Close()
+		if fi, statErr := f.Stat(); statErr == nil && fi.IsDir() {
+			// Try directory index
+			indexPath := path.Join(p, "index.html")
+			if idx, idxErr := e.FileSystem.Open(indexPath); idxErr == nil {
+				_ = idx.Close()
+				return true
+			}
+			return false
+		}
+		return true
 	}
-	return true
+	// Fallback: try index.html under this path (for directory-like routes)
+	indexPath := path.Join(p, "index.html")
+	if idx, idxErr := e.FileSystem.Open(indexPath); idxErr == nil {
+		_ = idx.Close()
+		return true
+	}
+	return false
 }
 
 func (e *embedFileSystem) Open(name string) (http.File, error) {
@@ -29,7 +46,15 @@ func (e *embedFileSystem) Open(name string) (http.File, error) {
 		// which will use the replaced index bytes with analytic codes.
 		return nil, os.ErrNotExist
 	}
-	return e.FileSystem.Open(name)
+	f, err := e.FileSystem.Open(name)
+	if err == nil {
+		if fi, statErr := f.Stat(); statErr == nil && fi.IsDir() {
+			_ = f.Close()
+			// Serve directory index file
+			return e.FileSystem.Open(path.Join(name, "index.html"))
+		}
+	}
+	return f, err
 }
 
 func EmbedFolder(fsEmbed embed.FS, targetPath string) static.ServeFileSystem {

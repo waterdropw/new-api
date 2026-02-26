@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>重排序（Rerank）接口</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/docs/zh/shared.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="/docs/zh/index.html">API 参考</a>
+        <span>/</span>
+        <span>重排序</span>
+      </nav>
+
+      <header class="endpoint-header">
+        <div>
+          <span class="method-badge">POST</span>
+          <code class="endpoint-path"><span>/</span>v1<span>/</span>rerank</code>
+        </div>
+        <h1>重排序（Rerank）</h1>
+        <p class="subtitle">文档重排序 / 排名接口，优化向量检索结果</p>
+      </header>
+
+      <section class="section">
+        <h2 class="section-title">接口说明</h2>
+        <p class="section-desc">
+          重排序接口用于对一组文档根据查询语句进行相关性排序，常用于向量检索后的 rerank 流程。
+        </p>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">认证</h2>
+        <p class="section-desc">使用 Bearer Token 认证，格式：<code>Authorization: Bearer sk-xxxxxx</code></p>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">请求体参数</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>参数</th>
+                <th>类型</th>
+                <th>必需</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>model</code></td>
+                <td>string</td>
+                <td><span class="required">是</span></td>
+                <td>模型名称，如 bge-reranker-v2-m3</td>
+              </tr>
+              <tr>
+                <td><code>query</code></td>
+                <td>string</td>
+                <td><span class="required">是</span></td>
+                <td>查询语句</td>
+              </tr>
+              <tr>
+                <td><code>documents</code></td>
+                <td>array&lt;string&gt;</td>
+                <td><span class="required">是</span></td>
+                <td>待排序的文档列表</td>
+              </tr>
+              <tr>
+                <td><code>top_n</code></td>
+                <td>integer</td>
+                <td><span class="optional">否</span></td>
+                <td>返回前 N 个结果，默认返回全部</td>
+              </tr>
+              <tr>
+                <td><code>return_documents</code></td>
+                <td>boolean</td>
+                <td><span class="optional">否</span></td>
+                <td>是否在结果中返回文档内容，默认 false</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">请求示例</h2>
+        <div class="code-block">
+          <div class="code-header">cURL</div>
+          <div class="code-content">
+            <pre><code>curl -X POST "https://your-base-url/v1/rerank" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxx" \
+  -d '{
+    "model": "bge-reranker-v2-m3",
+    "query": "什么是大语言模型？",
+    "documents": [
+      "大语言模型是基于深度学习的自然语言处理模型，能够理解和生成人类语言。",
+      "API 是应用程序接口的缩写，用于软件之间的通信。",
+      "常见的大语言模型包括 GPT、Claude、Gemini 等。"
+    ],
+    "top_n": 3
+  }'</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">响应示例</h2>
+        <div class="code-block">
+          <div class="code-header">200 OK</div>
+          <div class="code-content">
+            <pre><code>{
+  "id": "rerank-abc123",
+  "results": [
+    {
+      "index": 0,
+      "relevance_score": 0.953,
+      "document": {
+        "text": "大语言模型是基于深度学习的自然语言处理模型，能够理解和生成人类语言。"
+      }
+    },
+    {
+      "index": 2,
+      "relevance_score": 0.871,
+      "document": {
+        "text": "常见的大语言模型包括 GPT、Claude、Gemini 等。"
+      }
+    },
+    {
+      "index": 1,
+      "relevance_score": 0.124,
+      "document": {
+        "text": "API 是应用程序接口的缩写，用于软件之间的通信。"
+      }
+    }
+  ],
+  "meta": {
+    "billed_units": {
+      "search_units": 1
+    }
+  }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Online Test Section -->
+      <div class="test-section">
+        <div class="test-header" onclick="toggleTestSection()">
+          <div class="test-header-left">
+            <span class="test-header-title">在线测试</span>
+            <span class="test-header-desc">直接在此页面测试 API</span>
+          </div>
+          <button class="test-header-button" id="sendBtn" onclick="sendRequest(event)">
+            <span>发送请求</span>
+            <span class="method-badge-header">POST</span>
+          </button>
+          <svg class="test-toggle expanded" id="testToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="test-content expanded" id="testContent">
+          <div class="test-subsection">
+            <div class="test-subsection-header" onclick="toggleSubsection('auth')">
+              <svg class="test-subsection-toggle" id="authToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+              <span class="test-subsection-title">Authorization</span>
+            </div>
+            <div class="test-subsection-content" id="authContent">
+              <div class="test-form-group">
+                <label class="test-label">Token</label>
+                <input type="text" class="test-input" id="authToken" placeholder="sk-xxxxxx">
+              </div>
+            </div>
+          </div>
+
+          <div class="test-subsection">
+            <div class="test-subsection-header" onclick="toggleSubsection('body')">
+              <svg class="test-subsection-toggle" id="bodyToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+              <span class="test-subsection-title">Body</span>
+            </div>
+            <div class="test-subsection-content" id="bodyContent">
+              <div class="test-form-group">
+                <textarea class="test-input test-textarea" id="requestBody">{
+  "model": "bge-reranker-v2-m3",
+  "query": "什么是大语言模型？",
+  "documents": [
+    "大语言模型是基于深度学习的自然语言处理模型，能够理解和生成人类语言。",
+    "API 是应用程序接口的缩写，用于软件之间的通信。",
+    "常见的大语言模型包括 GPT、Claude、Gemini 等。",
+    "通过统一的 API 网关，开发者可以用统一的格式调用不同的 AI 服务。"
+  ],
+  "top_n": 3
+}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-response" id="responseArea" style="display: none;">
+            <div class="test-response-header">
+              <span class="test-response-status" id="responseStatus"></span>
+            </div>
+            <div class="test-response-body">
+              <pre id="responseBody"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+    <script src="/docs/zh/shared.js"></script>
+    <script>
+      var sendRequest = sendApiRequest('/v1/rerank');
+    </script>
+  </body>
+</html>
