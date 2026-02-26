@@ -2,233 +2,9 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>音频（Audio）接口 | New API</title>
+    <title>音频（Audio）接口</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <style>
-      :root {
-        color-scheme: light dark;
-        --bg: #ffffff;
-        --bg-subtle: #f8fafc;
-        --bg-hover: #f1f5f9;
-        --text: #0f172a;
-        --text-secondary: #475569;
-        --text-muted: #64748b;
-        --primary: #3b82f6;
-        --primary-hover: #2563eb;
-        --primary-bg: #eff6ff;
-        --border: #e2e8f0;
-        --success: #10b981;
-        --success-bg: #ecfdf5;
-        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #0f172a;
-          --bg-subtle: #1e293b;
-          --bg-hover: #334155;
-          --text: #f8fafc;
-          --text-secondary: #cbd5e1;
-          --text-muted: #94a3b8;
-          --primary: #60a5fa;
-          --primary-hover: #3b82f6;
-          --primary-bg: rgba(59, 130, 246, 0.2);
-          --border: #334155;
-          --success: #34d399;
-          --success-bg: rgba(16, 185, 129, 0.2);
-          --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-          --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
-        }
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display',
-          'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.6;
-        -webkit-font-smoothing: antialiased;
-      }
-      a {
-        color: var(--primary);
-        text-decoration: none;
-        transition: color 0.15s ease;
-      }
-      a:hover {
-        color: var(--primary-hover);
-      }
-      .page {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 40px 24px 80px;
-      }
-      @media (max-width: 768px) {
-        .page {
-          padding: 24px 16px 64px;
-        }
-      }
-
-      /* Breadcrumb */
-      .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        color: var(--text-muted);
-        margin-bottom: 24px;
-      }
-      .breadcrumb a {
-        color: var(--text-muted);
-      }
-      .breadcrumb a:hover {
-        color: var(--primary);
-      }
-
-      /* Header */
-      .endpoint-header {
-        margin-bottom: 32px;
-        padding-bottom: 24px;
-        border-bottom: 1px solid var(--border);
-      }
-      .method-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 10px;
-        background: var(--success-bg);
-        color: var(--success);
-        font-size: 12px;
-        font-weight: 600;
-        border-radius: 6px;
-        margin-right: 12px;
-        font-family: ui-monospace, monospace;
-      }
-      .endpoint-path {
-        font-size: 15px;
-        color: var(--text-secondary);
-        font-family: ui-monospace, monospace;
-      }
-      .endpoint-path span {
-        color: var(--border);
-        margin: 0 2px;
-      }
-      h1 {
-        margin: 16px 0 8px;
-        font-size: 32px;
-        font-weight: 700;
-        letter-spacing: -0.025em;
-      }
-      .subtitle {
-        color: var(--text-secondary);
-        font-size: 16px;
-        line-height: 1.6;
-      }
-
-      /* Section */
-      .section {
-        margin-top: 40px;
-      }
-      .section-title {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 0 0 16px;
-        color: var(--text);
-      }
-      .section-desc {
-        color: var(--text-secondary);
-        font-size: 14px;
-        margin-bottom: 20px;
-      }
-
-      /* Endpoints */
-      .endpoint-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .endpoint-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 14px 16px;
-        background: var(--bg-subtle);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-      }
-      .endpoint-method {
-        font-family: ui-monospace, monospace;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--success);
-        background: var(--success-bg);
-        padding: 2px 8px;
-        border-radius: 4px;
-      }
-      .endpoint-url {
-        font-family: ui-monospace, monospace;
-        font-size: 14px;
-        color: var(--text);
-      }
-
-      /* Code Block */
-      .code-block {
-        background: var(--bg-subtle);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        overflow: hidden;
-      }
-      .code-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        background: rgba(15, 23, 42, 0.03);
-        border-bottom: 1px solid var(--border);
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--text-secondary);
-      }
-      @media (prefers-color-scheme: dark) {
-        .code-header {
-          background: rgba(255, 255, 255, 0.03);
-        }
-      }
-      code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          'Liberation Mono', 'Courier New', monospace;
-        font-size: 13px;
-      }
-      pre {
-        margin: 0;
-        padding: 16px;
-        overflow-x: auto;
-      }
-      pre code {
-        color: var(--text);
-        line-height: 1.6;
-      }
-      .code-content {
-        background: rgba(15, 23, 42, 0.05);
-        margin: 0 16px 16px;
-        border-radius: 8px;
-      }
-      @media (prefers-color-scheme: dark) {
-        .code-content {
-          background: rgba(0, 0, 0, 0.3);
-        }
-      }
-
-      /* Footer */
-      footer {
-        margin-top: 64px;
-        padding-top: 24px;
-        border-top: 1px solid var(--border);
-        font-size: 13px;
-        color: var(--text-muted);
-      }
-    </style>
+    <link rel="stylesheet" href="../shared.css" />
   </head>
   <body>
     <main class="page">
@@ -241,7 +17,7 @@
       <header class="endpoint-header">
         <div>
           <span class="method-badge">POST</span>
-          <code class="endpoint-path">/v1/audio/<span>{</span>transcriptions,speech<span>}</span></code>
+          <code class="endpoint-path"><span>/</span>v1<span>/</span>audio<span>/</span>{transcriptions,speech}</code>
         </div>
         <h1>音频（Audio）</h1>
         <p class="subtitle">语音识别与语音合成接口，兼容 OpenAI Audio 系列接口</p>
@@ -252,6 +28,11 @@
         <p class="section-desc">
           音频接口支持语音转文本（ASR）和文本转语音（TTS）等能力。可用于语音输入识别、语音播报等场景。
         </p>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">认证</h2>
+        <p class="section-desc">使用 Bearer Token 认证，格式：<code>Authorization: Bearer sk-xxxxxx</code></p>
       </section>
 
       <section class="section">
@@ -276,6 +57,102 @@
       </section>
 
       <section class="section">
+        <h2 class="section-title">语音转文本 — 请求参数</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>参数</th>
+                <th>类型</th>
+                <th>必需</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>file</code></td>
+                <td>file</td>
+                <td><span class="required">是</span></td>
+                <td>音频文件（multipart/form-data），支持 mp3, mp4, mpeg, mpga, m4a, wav, webm</td>
+              </tr>
+              <tr>
+                <td><code>model</code></td>
+                <td>string</td>
+                <td><span class="required">是</span></td>
+                <td>模型名称，如 whisper-1</td>
+              </tr>
+              <tr>
+                <td><code>language</code></td>
+                <td>string</td>
+                <td><span class="optional">否</span></td>
+                <td>音频语言，ISO-639-1 格式，如 zh、en</td>
+              </tr>
+              <tr>
+                <td><code>response_format</code></td>
+                <td>string</td>
+                <td><span class="optional">否</span></td>
+                <td>响应格式：json、text、srt、verbose_json、vtt，默认 json</td>
+              </tr>
+              <tr>
+                <td><code>temperature</code></td>
+                <td>number</td>
+                <td><span class="optional">否</span></td>
+                <td>采样温度 (0-1)，默认 0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">文本转语音 — 请求参数</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>参数</th>
+                <th>类型</th>
+                <th>必需</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>model</code></td>
+                <td>string</td>
+                <td><span class="required">是</span></td>
+                <td>模型名称，如 tts-1、tts-1-hd</td>
+              </tr>
+              <tr>
+                <td><code>input</code></td>
+                <td>string</td>
+                <td><span class="required">是</span></td>
+                <td>要转换为语音的文本，最大 4096 字符</td>
+              </tr>
+              <tr>
+                <td><code>voice</code></td>
+                <td>string</td>
+                <td><span class="required">是</span></td>
+                <td>语音类型：alloy、echo、fable、onyx、nova、shimmer</td>
+              </tr>
+              <tr>
+                <td><code>response_format</code></td>
+                <td>string</td>
+                <td><span class="optional">否</span></td>
+                <td>输出格式：mp3、opus、aac、flac、wav、pcm，默认 mp3</td>
+              </tr>
+              <tr>
+                <td><code>speed</code></td>
+                <td>number</td>
+                <td><span class="optional">否</span></td>
+                <td>语速 (0.25-4.0)，默认 1.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
         <h2 class="section-title">请求示例：语音转文本</h2>
         <div class="code-block">
           <div class="code-header">cURL</div>
@@ -289,19 +166,152 @@
       </section>
 
       <section class="section">
-        <h2 class="section-title">请求示例：文本转语音</h2>
+        <h2 class="section-title">响应示例：语音转文本</h2>
         <div class="code-block">
-          <div class="code-header">Request Body</div>
+          <div class="code-header">200 OK</div>
           <div class="code-content">
             <pre><code>{
-  "model": "tts-1",
-  "input": "你好，欢迎使用 New API",
-  "voice": "alloy"
+  "text": "你好，欢迎使用语音识别功能。"
 }</code></pre>
           </div>
         </div>
       </section>
 
+      <section class="section">
+        <h2 class="section-title">请求示例：文本转语音</h2>
+        <div class="code-block">
+          <div class="code-header">cURL</div>
+          <div class="code-content">
+            <pre><code>curl -X POST "https://your-base-url/v1/audio/speech" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxx" \
+  -d '{
+    "model": "tts-1",
+    "input": "你好，欢迎使用 AI 语音服务",
+    "voice": "alloy"
+  }' \
+  --output speech.mp3</code></pre>
+          </div>
+        </div>
+        <div class="info-box">
+          文本转语音接口返回的是音频二进制流，需要保存为文件。
+        </div>
+      </section>
+
+      <!-- Online Test Section -->
+      <div class="test-section">
+        <div class="test-header" onclick="toggleTestSection()">
+          <div class="test-header-left">
+            <span class="test-header-title">在线测试（文本转语音）</span>
+            <span class="test-header-desc">直接在此页面测试 TTS API</span>
+          </div>
+          <button class="test-header-button" id="sendBtn" onclick="sendTtsRequest(event)">
+            <span>发送请求</span>
+            <span class="method-badge-header">POST</span>
+          </button>
+          <svg class="test-toggle expanded" id="testToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="test-content expanded" id="testContent">
+          <div class="test-subsection">
+            <div class="test-subsection-header" onclick="toggleSubsection('auth')">
+              <svg class="test-subsection-toggle" id="authToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+              <span class="test-subsection-title">Authorization</span>
+            </div>
+            <div class="test-subsection-content" id="authContent">
+              <div class="test-form-group">
+                <label class="test-label">Token</label>
+                <input type="text" class="test-input" id="authToken" placeholder="sk-xxxxxx">
+              </div>
+            </div>
+          </div>
+
+          <div class="test-subsection">
+            <div class="test-subsection-header" onclick="toggleSubsection('body')">
+              <svg class="test-subsection-toggle" id="bodyToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+              <span class="test-subsection-title">Body</span>
+            </div>
+            <div class="test-subsection-content" id="bodyContent">
+              <div class="test-form-group">
+                <textarea class="test-input test-textarea" id="requestBody">{
+  "model": "tts-1",
+  "input": "你好，欢迎使用 AI 语音服务",
+  "voice": "alloy",
+  "response_format": "mp3"
+}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-response" id="responseArea" style="display: none;">
+            <div class="test-response-header">
+              <span class="test-response-status" id="responseStatus"></span>
+            </div>
+            <div class="test-response-body">
+              <pre id="responseBody"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 16px;">
+        语音转文本接口需要上传音频文件（multipart/form-data），无法在此页面直接测试，请使用 cURL 或客户端工具。
+      </div>
+
     </main>
+    <script src="../shared.js"></script>
+    <script>
+      function sendTtsRequest(event) {
+        if (event) event.stopPropagation();
+        var btn = document.getElementById('sendBtn');
+        var responseArea = document.getElementById('responseArea');
+        var responseStatus = document.getElementById('responseStatus');
+        var responseBody = document.getElementById('responseBody');
+        var token = document.getElementById('authToken').value.trim();
+        var body = document.getElementById('requestBody').value;
+
+        if (!token) { alert('请输入 Token'); return; }
+
+        btn.disabled = true;
+        btn.innerHTML = '<div class="test-button-spinner"></div><span>发送中...</span>';
+        responseArea.style.display = 'none';
+
+        fetch(API_BASE_URL + '/v1/audio/speech', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: body
+        }).then(function(response) {
+          if (response.ok) {
+            return response.blob().then(function(blob) {
+              var url = URL.createObjectURL(blob);
+              responseStatus.innerHTML = '<span class="status-success">' + response.status + ' ' + response.statusText + '</span>';
+              responseBody.innerHTML = '音频生成成功，<a href="' + url + '" download="speech.mp3">点击下载</a><br><br><audio controls src="' + url + '"></audio>';
+              responseArea.style.display = 'block';
+            });
+          } else {
+            return response.json().then(function(data) {
+              responseStatus.innerHTML = '<span class="status-error">' + response.status + ' ' + response.statusText + '</span>';
+              responseBody.textContent = JSON.stringify(data, null, 2);
+              responseArea.style.display = 'block';
+            });
+          }
+        }).catch(function(error) {
+          responseStatus.innerHTML = '<span class="status-error">Error</span>';
+          responseBody.textContent = error.message;
+          responseArea.style.display = 'block';
+        }).finally(function() {
+          btn.disabled = false;
+          btn.innerHTML = '<span>发送请求</span><span class="method-badge-header">POST</span>';
+        });
+      }
+    </script>
   </body>
 </html>

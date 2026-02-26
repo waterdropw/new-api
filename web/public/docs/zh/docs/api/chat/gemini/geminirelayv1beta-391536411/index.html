@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gemini媒体识别</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="../../../shared.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="/docs/zh/docs/api/index.html">API 参考</a>
+        <span>/</span>
+        <a href="/docs/zh/docs/api/chat/index.html">聊天</a>
+        <span>/</span>
+        <a href="/docs/zh/docs/api/chat/gemini/index.html">原生Gemini格式</a>
+        <span>/</span>
+        <span>Gemini媒体识别</span>
+      </nav>
+
+      <header class="endpoint-header">
+        <div>
+          <span class="method-badge">POST</span>
+          <code class="endpoint-path"><span>/</span>v1beta<span>/</span>models<span>/</span><span style="color:var(--primary);font-weight:500">{model}</span>:generateContent</code>
+        </div>
+        <h1>Gemini媒体识别</h1>
+        <p class="subtitle">Gemini 图像、PDF、音频、视频识别请求</p>
+      </header>
+
+      <section class="section">
+        <div class="alert">
+          <svg class="alert-icon alert-icon-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <p class="alert-content">
+            <strong>注意：</strong>仅支持通过 <code>inlineData</code> 以 base64 方式上传图像、PDF、音频、视频，不支持 <code>fileData.fileUri</code> 或 File API。
+          </p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">认证</h2>
+        <p class="section-desc">使用 Bearer Token 认证，格式：<code>Authorization: Bearer sk-xxxxxx</code></p>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">路径参数</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>参数</th>
+                <th>类型</th>
+                <th>必需</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>model</code></td>
+                <td>string</td>
+                <td><span class="required">是</span></td>
+                <td>模型名称，如 gemini-2.5-pro</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">请求示例：图像识别</h2>
+        <div class="code-block">
+          <div class="code-header">cURL</div>
+          <div class="code-content">
+            <pre><code>curl -X POST "https://your-base-url/v1beta/models/gemini-2.5-pro:generateContent" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxx" \
+  -d '{
+    "contents": [
+      {
+        "role": "user",
+        "parts": [
+          {
+            "text": "请描述这张图片的内容"
+          },
+          {
+            "inlineData": {
+              "mimeType": "image/jpeg",
+              "data": "/9j/4AAQSkZJRgABAQ..."
+            }
+          }
+        ]
+      }
+    ]
+  }'</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">响应示例</h2>
+        <div class="code-block">
+          <div class="code-header">200 OK</div>
+          <div class="code-content">
+            <pre><code>{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "这张图片展示了一幅美丽的风景..."
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "safetyRatings": []
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 258,
+    "candidatesTokenCount": 45,
+    "totalTokenCount": 303
+  }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

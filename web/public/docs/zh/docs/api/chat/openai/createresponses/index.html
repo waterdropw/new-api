@@ -2,33 +2,30 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>重排序（Rerank）接口</title>
+    <title>Responses格式</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="../shared.css" />
+    <link rel="stylesheet" href="../../../shared.css" />
   </head>
   <body>
     <main class="page">
       <nav class="breadcrumb">
         <a href="/docs/zh/docs/api/index.html">API 参考</a>
         <span>/</span>
-        <span>重排序</span>
+        <a href="/docs/zh/docs/api/chat/index.html">聊天</a>
+        <span>/</span>
+        <a href="/docs/zh/docs/api/chat/openai/index.html">原生OpenAI格式</a>
+        <span>/</span>
+        <span>Responses格式</span>
       </nav>
 
       <header class="endpoint-header">
         <div>
           <span class="method-badge">POST</span>
-          <code class="endpoint-path"><span>/</span>v1<span>/</span>rerank</code>
+          <code class="endpoint-path"><span>/</span>v1<span>/</span>responses</code>
         </div>
-        <h1>重排序（Rerank）</h1>
-        <p class="subtitle">文档重排序 / 排名接口，优化向量检索结果</p>
+        <h1>Responses格式</h1>
+        <p class="subtitle">OpenAI Responses API，支持多轮对话、工具调用和推理能力。</p>
       </header>
-
-      <section class="section">
-        <h2 class="section-title">接口说明</h2>
-        <p class="section-desc">
-          重排序接口用于对一组文档根据查询语句进行相关性排序，常用于向量检索后的 rerank 流程。
-        </p>
-      </section>
 
       <section class="section">
         <h2 class="section-title">认证</h2>
@@ -52,31 +49,73 @@
                 <td><code>model</code></td>
                 <td>string</td>
                 <td><span class="required">是</span></td>
-                <td>模型名称，如 bge-reranker-v2-m3</td>
+                <td>模型标识符</td>
               </tr>
               <tr>
-                <td><code>query</code></td>
+                <td><code>input</code></td>
+                <td>string | array&lt;object&gt;</td>
+                <td><span class="optional">否</span></td>
+                <td>输入内容（字符串或消息数组）</td>
+              </tr>
+              <tr>
+                <td><code>instructions</code></td>
                 <td>string</td>
-                <td><span class="required">是</span></td>
-                <td>查询语句</td>
+                <td><span class="optional">否</span></td>
+                <td>系统指令</td>
               </tr>
               <tr>
-                <td><code>documents</code></td>
-                <td>array&lt;string&gt;</td>
-                <td><span class="required">是</span></td>
-                <td>待排序的文档列表</td>
-              </tr>
-              <tr>
-                <td><code>top_n</code></td>
+                <td><code>max_output_tokens</code></td>
                 <td>integer</td>
                 <td><span class="optional">否</span></td>
-                <td>返回前 N 个结果，默认返回全部</td>
+                <td>最大生成 token 数</td>
               </tr>
               <tr>
-                <td><code>return_documents</code></td>
+                <td><code>temperature</code></td>
+                <td>number</td>
+                <td><span class="optional">否</span></td>
+                <td>采样温度</td>
+              </tr>
+              <tr>
+                <td><code>top_p</code></td>
+                <td>number</td>
+                <td><span class="optional">否</span></td>
+                <td>核采样参数</td>
+              </tr>
+              <tr>
+                <td><code>stream</code></td>
                 <td>boolean</td>
                 <td><span class="optional">否</span></td>
-                <td>是否在结果中返回文档内容，默认 false</td>
+                <td>是否启用流式响应</td>
+              </tr>
+              <tr>
+                <td><code>tools</code></td>
+                <td>array&lt;object&gt;</td>
+                <td><span class="optional">否</span></td>
+                <td>可用工具（函数调用）</td>
+              </tr>
+              <tr>
+                <td><code>tool_choice</code></td>
+                <td>string | object</td>
+                <td><span class="optional">否</span></td>
+                <td>工具选择策略</td>
+              </tr>
+              <tr>
+                <td><code>reasoning</code></td>
+                <td>object</td>
+                <td><span class="optional">否</span></td>
+                <td>推理配置</td>
+              </tr>
+              <tr>
+                <td><code>previous_response_id</code></td>
+                <td>string</td>
+                <td><span class="optional">否</span></td>
+                <td>前一条响应 ID（用于上下文）</td>
+              </tr>
+              <tr>
+                <td><code>truncation</code></td>
+                <td>string</td>
+                <td><span class="optional">否</span></td>
+                <td>截断策略：auto 或 disabled</td>
               </tr>
             </tbody>
           </table>
@@ -88,18 +127,36 @@
         <div class="code-block">
           <div class="code-header">cURL</div>
           <div class="code-content">
-            <pre><code>curl -X POST "https://your-base-url/v1/rerank" \
+            <pre><code>curl -X POST "https://your-base-url/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-xxxxxx" \
   -d '{
-    "model": "bge-reranker-v2-m3",
-    "query": "什么是大语言模型？",
-    "documents": [
-      "大语言模型是基于深度学习的自然语言处理模型，能够理解和生成人类语言。",
-      "API 是应用程序接口的缩写，用于软件之间的通信。",
-      "常见的大语言模型包括 GPT、Claude、Gemini 等。"
+    "model": "gpt-4o",
+    "input": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant."
+      },
+      {
+        "role": "user",
+        "content": "What is the weather like?"
+      }
     ],
-    "top_n": 3
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "description": "Get the current weather",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "location": {"type": "string"}
+            }
+          }
+        }
+      }
+    ]
   }'</code></pre>
           </div>
         </div>
@@ -111,34 +168,29 @@
           <div class="code-header">200 OK</div>
           <div class="code-content">
             <pre><code>{
-  "id": "rerank-abc123",
-  "results": [
+  "id": "resp_abc123",
+  "object": "response",
+  "created_at": 1699062912,
+  "status": "completed",
+  "model": "gpt-4o",
+  "output": [
     {
-      "index": 0,
-      "relevance_score": 0.953,
-      "document": {
-        "text": "大语言模型是基于深度学习的自然语言处理模型，能够理解和生成人类语言。"
-      }
-    },
-    {
-      "index": 2,
-      "relevance_score": 0.871,
-      "document": {
-        "text": "常见的大语言模型包括 GPT、Claude、Gemini 等。"
-      }
-    },
-    {
-      "index": 1,
-      "relevance_score": 0.124,
-      "document": {
-        "text": "API 是应用程序接口的缩写，用于软件之间的通信。"
-      }
+      "type": "message",
+      "id": "msg_abc123",
+      "status": "completed",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "I'd be happy to help you check the weather. Could you please tell me your location?"
+        }
+      ]
     }
   ],
-  "meta": {
-    "billed_units": {
-      "search_units": 1
-    }
+  "usage": {
+    "prompt_tokens": 45,
+    "completion_tokens": 20,
+    "total_tokens": 65
   }
 }</code></pre>
           </div>
@@ -186,15 +238,19 @@
             <div class="test-subsection-content" id="bodyContent">
               <div class="test-form-group">
                 <textarea class="test-input test-textarea" id="requestBody">{
-  "model": "bge-reranker-v2-m3",
-  "query": "什么是大语言模型？",
-  "documents": [
-    "大语言模型是基于深度学习的自然语言处理模型，能够理解和生成人类语言。",
-    "API 是应用程序接口的缩写，用于软件之间的通信。",
-    "常见的大语言模型包括 GPT、Claude、Gemini 等。",
-    "通过统一的 API 网关，开发者可以用统一的格式调用不同的 AI 服务。"
+  "model": "gpt-4o",
+  "input": [
+    {
+      "role": "system",
+      "content": "You are a helpful assistant."
+    },
+    {
+      "role": "user",
+      "content": "你好，请介绍一下自己"
+    }
   ],
-  "top_n": 3
+  "temperature": 0.7,
+  "max_output_tokens": 1000
 }</textarea>
               </div>
             </div>
@@ -212,9 +268,9 @@
       </div>
 
     </main>
-    <script src="../shared.js"></script>
+    <script src="../../../shared.js"></script>
     <script>
-      var sendRequest = sendApiRequest('/v1/rerank');
+      var sendRequest = sendApiRequest('/v1/responses');
     </script>
   </body>
 </html>
