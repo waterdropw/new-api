@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/gin-contrib/static"
 )
@@ -17,12 +18,16 @@ type embedFileSystem struct {
 }
 
 func (e *embedFileSystem) Exists(prefix string, p string) bool {
-	f, err := e.FileSystem.Open(p)
+	cleanPath := strings.TrimPrefix(p, "/")
+	if cleanPath == "" {
+		return false
+	}
+	f, err := e.FileSystem.Open(cleanPath)
 	if err == nil {
 		defer f.Close()
 		if fi, statErr := f.Stat(); statErr == nil && fi.IsDir() {
 			// Try directory index
-			indexPath := path.Join(p, "index.html")
+			indexPath := path.Join(cleanPath, "index.html")
 			if idx, idxErr := e.FileSystem.Open(indexPath); idxErr == nil {
 				_ = idx.Close()
 				return true
@@ -32,7 +37,7 @@ func (e *embedFileSystem) Exists(prefix string, p string) bool {
 		return true
 	}
 	// Fallback: try index.html under this path (for directory-like routes)
-	indexPath := path.Join(p, "index.html")
+	indexPath := path.Join(cleanPath, "index.html")
 	if idx, idxErr := e.FileSystem.Open(indexPath); idxErr == nil {
 		_ = idx.Close()
 		return true
@@ -46,12 +51,16 @@ func (e *embedFileSystem) Open(name string) (http.File, error) {
 		// which will use the replaced index bytes with analytic codes.
 		return nil, os.ErrNotExist
 	}
-	f, err := e.FileSystem.Open(name)
+	cleanName := strings.TrimPrefix(name, "/")
+	if cleanName == "" {
+		return nil, os.ErrNotExist
+	}
+	f, err := e.FileSystem.Open(cleanName)
 	if err == nil {
 		if fi, statErr := f.Stat(); statErr == nil && fi.IsDir() {
 			_ = f.Close()
 			// Serve directory index file
-			return e.FileSystem.Open(path.Join(name, "index.html"))
+			return e.FileSystem.Open(path.Join(cleanName, "index.html"))
 		}
 	}
 	return f, err
