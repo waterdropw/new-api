@@ -23,6 +23,37 @@
       </header>
 
       <section class="section">
+        <h2 class="section-title">能力覆盖</h2>
+        <p class="section-desc">Gemini 原生格式覆盖文本与多模态识别两类场景。</p>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>能力</th>
+                <th>HTTP</th>
+                <th>路径模板</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>文本聊天</td>
+                <td><span class="method-badge">POST</span></td>
+                <td><code>/v1beta/models/{model}:generateContent</code></td>
+                <td>文本对话与推理生成</td>
+              </tr>
+              <tr>
+                <td>媒体识别</td>
+                <td><span class="method-badge">POST</span></td>
+                <td><code>/v1beta/models/{model}:generateContent</code></td>
+                <td>通过 <code>inlineData</code> 传入图像/音频/PDF/视频</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
         <h2 class="section-title">子页面</h2>
         <p class="section-desc">原生 Gemini 格式支持以下接口：</p>
 
@@ -43,6 +74,40 @@
         </div>
       </section>
 
+      <section class="section">
+        <h2 class="section-title">常见错误响应</h2>
+        <div class="code-block">
+          <div class="code-header">400 Bad Request</div>
+          <div class="code-content">
+            <pre><code>{
+  "error": {
+    "message": "invalid model name",
+    "type": "invalid_request_error",
+    "param": "model",
+    "code": "invalid_model"
+  }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">相关接口</h2>
+        <div class="endpoint-list">
+          <a class="endpoint-item" href="/docs/zh/chat/openai/createchatcompletion/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1/chat/completions</code>
+            <span>OpenAI 风格聊天接口</span>
+          </a>
+          <a class="endpoint-item" href="/docs/zh/chat/createmessage/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1/messages</code>
+            <span>Claude 原生 Messages 接口</span>
+          </a>
+        </div>
+      </section>
+
     </main>
+    <script src="/docs/zh/shared.js"></script>
   </body>
 </html>

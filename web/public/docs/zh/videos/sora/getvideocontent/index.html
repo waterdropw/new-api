@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>获取视频内容（Get Video Content）</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/docs/zh/shared.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="/docs/zh/index.html">API 参考</a>
+        <span>/</span>
+        <a href="/docs/zh/videos/index.html">视频</a>
+        <span>/</span>
+        <span>获取视频内容</span>
+      </nav>
+
+      <header class="endpoint-header">
+        <div>
+          <span class="method-badge method-badge-get">GET</span>
+          <code class="endpoint-path"><span>/</span>v1<span>/</span>videos<span>/</span><span style="color:var(--primary);font-weight:500">{task_id}</span><span>/</span>content</code>
+        </div>
+        <h1>获取视频内容</h1>
+        <p class="subtitle">下载视频任务产出的二进制内容流。</p>
+      </header>
+
+      <section class="section">
+        <h2 class="section-title">认证</h2>
+        <p class="section-desc">使用 Bearer Token 认证：<code>Authorization: Bearer sk-xxxxxx</code></p>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">路径参数</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>参数</th>
+                <th>类型</th>
+                <th>必需</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>task_id</code></td>
+                <td>string</td>
+                <td><span class="required">是</span></td>
+                <td>视频任务 ID（状态为 succeeded 后可下载）</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">请求示例</h2>
+        <div class="code-block">
+          <div class="code-header">cURL</div>
+          <div class="code-content">
+            <pre><code>curl -L "https://your-base-url/v1/videos/video_task_abc123/content" \
+  -H "Authorization: Bearer sk-xxxxxx" \
+  --output output.mp4</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">响应说明</h2>
+        <div class="info-box">
+          成功响应通常为视频流（如 <code>video/mp4</code>），建议直接保存文件或在播放器中播放。
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">常见错误响应</h2>
+        <div class="code-block">
+          <div class="code-header">409 Conflict</div>
+          <div class="code-content">
+            <pre><code>{
+  "error": {
+    "message": "video task is not finished",
+    "type": "invalid_request_error",
+    "param": "task_id",
+    "code": "task_not_ready"
+  }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">在线测试说明</h2>
+        <div class="info-box">
+          该接口返回二进制内容且需动态替换 <code>{task_id}</code>，建议通过 cURL 或 SDK 调用并保存为文件。
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">相关接口</h2>
+        <div class="endpoint-list">
+          <a class="endpoint-item" href="/docs/zh/videos/sora/createvideo/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1/videos/generations</code>
+            <span>创建视频任务</span>
+          </a>
+          <a class="endpoint-item" href="/docs/zh/videos/sora/getvideo/index.html">
+            <span class="endpoint-method method-badge-get">GET</span>
+            <code class="endpoint-url">/v1/videos/{task_id}</code>
+            <span>查询任务状态</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <script src="/docs/zh/shared.js"></script>
+  </body>
+</html>

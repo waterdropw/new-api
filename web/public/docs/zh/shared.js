@@ -39,6 +39,834 @@ var modelSelectorRefs = {
   refreshBtn: null,
 };
 
+var DOC_PAGE_META = {
+  '/docs/zh/models/index.html': {
+    officialLinks: [
+      {
+        label: '官网：模型列表（OpenAI）',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/models/list/listmodels',
+      },
+      {
+        label: '官网：模型列表（Gemini）',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/models/list/listmodelsgemini',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：列出模型',
+        href: '/docs/zh/models/list/listmodels/index.html',
+      },
+      {
+        label: '本地：聊天总览',
+        href: '/docs/zh/chat/index.html',
+      },
+    ],
+  },
+  '/docs/zh/models/list/listmodels/index.html': {
+    officialLinks: [
+      {
+        label: '官网：模型列表（OpenAI）',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/models/list/listmodels',
+      },
+      {
+        label: '官网：模型列表（Gemini）',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/models/list/listmodelsgemini',
+      },
+    ],
+    relatedLinks: [
+      { label: '本地：模型总览', href: '/docs/zh/models/index.html' },
+      {
+        label: '本地：聊天总览',
+        href: '/docs/zh/chat/index.html',
+      },
+      {
+        label: '本地：ChatCompletions',
+        href: '/docs/zh/chat/openai/createchatcompletion/index.html',
+      },
+    ],
+  },
+  '/docs/zh/chat/index.html': {
+    officialLinks: [
+      {
+        label: '官网：ChatCompletions',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/openai/createchatcompletion',
+      },
+      {
+        label: '官网：Claude Messages',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/createmessage',
+      },
+      {
+        label: '官网：Gemini GenerateContent',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/gemini/geminirelayv1beta',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：原生Claude格式',
+        href: '/docs/zh/chat/createmessage/index.html',
+      },
+      {
+        label: '本地：原生Gemini格式',
+        href: '/docs/zh/chat/gemini/index.html',
+      },
+      {
+        label: '本地：原生OpenAI格式',
+        href: '/docs/zh/chat/openai/index.html',
+      },
+    ],
+  },
+  '/docs/zh/chat/openai/index.html': {
+    officialLinks: [
+      {
+        label: '官网：ChatCompletions',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/openai/createchatcompletion',
+      },
+      {
+        label: '官网：Responses',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/openai/createresponse',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：ChatCompletions',
+        href: '/docs/zh/chat/openai/createchatcompletion/index.html',
+      },
+      {
+        label: '本地：Responses',
+        href: '/docs/zh/chat/openai/createresponses/index.html',
+      },
+      {
+        label: '本地：原生Claude格式',
+        href: '/docs/zh/chat/createmessage/index.html',
+      },
+    ],
+  },
+  '/docs/zh/chat/gemini/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Gemini GenerateContent',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/gemini/geminirelayv1beta',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：Gemini文本聊天',
+        href: '/docs/zh/chat/gemini/geminirelayv1beta/index.html',
+      },
+      {
+        label: '本地：Gemini媒体识别',
+        href: '/docs/zh/chat/gemini/geminirelayv1beta-391536411/index.html',
+      },
+      {
+        label: '本地：原生OpenAI格式',
+        href: '/docs/zh/chat/openai/index.html',
+      },
+    ],
+  },
+  '/docs/zh/chat/openai/createchatcompletion/index.html': {
+    officialLinks: [
+      {
+        label: '官网：ChatCompletions',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/openai/createchatcompletion',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：Responses',
+        href: '/docs/zh/chat/openai/createresponses/index.html',
+      },
+      {
+        label: '本地：Claude Messages',
+        href: '/docs/zh/chat/createmessage/index.html',
+      },
+    ],
+  },
+  '/docs/zh/chat/openai/createresponses/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Responses',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/openai/createresponse',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：ChatCompletions',
+        href: '/docs/zh/chat/openai/createchatcompletion/index.html',
+      },
+    ],
+  },
+  '/docs/zh/chat/createmessage/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Claude Messages',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/createmessage',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：ChatCompletions',
+        href: '/docs/zh/chat/openai/createchatcompletion/index.html',
+      },
+      {
+        label: '本地：Gemini 文本聊天',
+        href: '/docs/zh/chat/gemini/geminirelayv1beta/index.html',
+      },
+    ],
+  },
+  '/docs/zh/chat/gemini/geminirelayv1beta/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Gemini 文本聊天',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/chat/gemini/geminirelayv1beta',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：Gemini 媒体识别',
+        href: '/docs/zh/chat/gemini/geminirelayv1beta-391536411/index.html',
+      },
+    ],
+  },
+  '/docs/zh/completions/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Completions',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/completions/createcompletion',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：ChatCompletions',
+        href: '/docs/zh/chat/openai/createchatcompletion/index.html',
+      },
+    ],
+  },
+  '/docs/zh/embeddings/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Embeddings',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/embeddings/createembedding',
+      },
+    ],
+    relatedLinks: [
+      { label: '本地：重排序', href: '/docs/zh/rerank/index.html' },
+    ],
+  },
+  '/docs/zh/images/index.html': {
+    officialLinks: [
+      {
+        label: '官网：图像生成',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/images/openai/post-v1-images-generations',
+      },
+      {
+        label: '官网：图像编辑',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/images/openai/post-v1-images-edits',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：图像生成',
+        href: '/docs/zh/images/openai/post-v1-images-generations/index.html',
+      },
+      {
+        label: '本地：图像编辑',
+        href: '/docs/zh/images/openai/post-v1-images-edits/index.html',
+      },
+    ],
+  },
+  '/docs/zh/images/openai/post-v1-images-generations/index.html': {
+    officialLinks: [
+      {
+        label: '官网：图像生成',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/images/openai/post-v1-images-generations',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：图像编辑',
+        href: '/docs/zh/images/openai/post-v1-images-edits/index.html',
+      },
+      {
+        label: '本地：创建视频',
+        href: '/docs/zh/videos/sora/createvideo/index.html',
+      },
+    ],
+  },
+  '/docs/zh/images/openai/post-v1-images-edits/index.html': {
+    officialLinks: [
+      {
+        label: '官网：图像编辑',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/images/openai/post-v1-images-edits',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：图像生成',
+        href: '/docs/zh/images/openai/post-v1-images-generations/index.html',
+      },
+      {
+        label: '本地：创建视频',
+        href: '/docs/zh/videos/sora/createvideo/index.html',
+      },
+    ],
+  },
+  '/docs/zh/moderations/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Moderations',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/moderations/createmoderation',
+      },
+    ],
+    relatedLinks: [
+      { label: '本地：聊天', href: '/docs/zh/chat/index.html' },
+    ],
+  },
+  '/docs/zh/rerank/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Rerank',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/rerank/creatererank',
+      },
+    ],
+    relatedLinks: [
+      { label: '本地：嵌入', href: '/docs/zh/embeddings/index.html' },
+    ],
+  },
+  '/docs/zh/audio/index.html': {
+    officialLinks: [
+      {
+        label: '官网：文本转语音',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/audio/openai/createspeech',
+      },
+      {
+        label: '官网：音频转录',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/audio/openai/createtranscription',
+      },
+      {
+        label: '官网：音频翻译',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/audio/openai/createtranslation',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：文本转语音',
+        href: '/docs/zh/audio/openai/createspeech/index.html',
+      },
+      {
+        label: '本地：音频转录',
+        href: '/docs/zh/audio/openai/createtranscription/index.html',
+      },
+      {
+        label: '本地：音频翻译',
+        href: '/docs/zh/audio/openai/createtranslation/index.html',
+      },
+    ],
+  },
+  '/docs/zh/audio/openai/createspeech/index.html': {
+    officialLinks: [
+      {
+        label: '官网：文本转语音',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/audio/openai/createspeech',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：音频转录',
+        href: '/docs/zh/audio/openai/createtranscription/index.html',
+      },
+      {
+        label: '本地：音频翻译',
+        href: '/docs/zh/audio/openai/createtranslation/index.html',
+      },
+    ],
+  },
+  '/docs/zh/audio/openai/createtranscription/index.html': {
+    officialLinks: [
+      {
+        label: '官网：音频转录',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/audio/openai/createtranscription',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：文本转语音',
+        href: '/docs/zh/audio/openai/createspeech/index.html',
+      },
+      {
+        label: '本地：音频翻译',
+        href: '/docs/zh/audio/openai/createtranslation/index.html',
+      },
+    ],
+  },
+  '/docs/zh/audio/openai/createtranslation/index.html': {
+    officialLinks: [
+      {
+        label: '官网：音频翻译',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/audio/openai/createtranslation',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：文本转语音',
+        href: '/docs/zh/audio/openai/createspeech/index.html',
+      },
+      {
+        label: '本地：音频转录',
+        href: '/docs/zh/audio/openai/createtranscription/index.html',
+      },
+    ],
+  },
+  '/docs/zh/videos/index.html': {
+    officialLinks: [
+      {
+        label: '官网：创建视频',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/videos/sora/createvideo',
+      },
+      {
+        label: '官网：视频状态',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/videos/sora/getvideo',
+      },
+      {
+        label: '官网：视频内容',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/videos/sora/getvideocontent',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：创建视频',
+        href: '/docs/zh/videos/sora/createvideo/index.html',
+      },
+      {
+        label: '本地：查询状态',
+        href: '/docs/zh/videos/sora/getvideo/index.html',
+      },
+      {
+        label: '本地：获取内容',
+        href: '/docs/zh/videos/sora/getvideocontent/index.html',
+      },
+    ],
+  },
+  '/docs/zh/videos/sora/createvideo/index.html': {
+    officialLinks: [
+      {
+        label: '官网：创建视频',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/videos/sora/createvideo',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：查询状态',
+        href: '/docs/zh/videos/sora/getvideo/index.html',
+      },
+      {
+        label: '本地：获取内容',
+        href: '/docs/zh/videos/sora/getvideocontent/index.html',
+      },
+    ],
+  },
+  '/docs/zh/videos/sora/getvideo/index.html': {
+    officialLinks: [
+      {
+        label: '官网：视频状态',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/videos/sora/getvideo',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：创建视频',
+        href: '/docs/zh/videos/sora/createvideo/index.html',
+      },
+      {
+        label: '本地：获取内容',
+        href: '/docs/zh/videos/sora/getvideocontent/index.html',
+      },
+    ],
+  },
+  '/docs/zh/videos/sora/getvideocontent/index.html': {
+    officialLinks: [
+      {
+        label: '官网：视频内容',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/videos/sora/getvideocontent',
+      },
+    ],
+    relatedLinks: [
+      {
+        label: '本地：创建视频',
+        href: '/docs/zh/videos/sora/createvideo/index.html',
+      },
+      {
+        label: '本地：查询状态',
+        href: '/docs/zh/videos/sora/getvideo/index.html',
+      },
+    ],
+  },
+  '/docs/zh/realtime/index.html': {
+    officialLinks: [
+      {
+        label: '官网：Realtime',
+        url: 'https://docs.newapi.pro/zh/docs/api/ai-model/realtime/createrealtimesession',
+      },
+    ],
+    relatedLinks: [
+      { label: '本地：音频总览', href: '/docs/zh/audio/index.html' },
+      {
+        label: '本地：文本转语音',
+        href: '/docs/zh/audio/openai/createspeech/index.html',
+      },
+      { label: '本地：聊天', href: '/docs/zh/chat/index.html' },
+    ],
+  },
+};
+
+var DOC_PAGE_FLOW = {
+  '/docs/zh/models/index.html': {
+    prev: { label: 'API参考首页', href: '/docs/zh/index.html' },
+    next: { label: '列出模型', href: '/docs/zh/models/list/listmodels/index.html' },
+  },
+  '/docs/zh/models/list/listmodels/index.html': {
+    prev: { label: '模型总览', href: '/docs/zh/models/index.html' },
+    next: { label: '聊天总览', href: '/docs/zh/chat/index.html' },
+  },
+  '/docs/zh/chat/index.html': {
+    prev: { label: '列出模型', href: '/docs/zh/models/list/listmodels/index.html' },
+    next: { label: '原生Claude格式', href: '/docs/zh/chat/createmessage/index.html' },
+  },
+  '/docs/zh/chat/createmessage/index.html': {
+    prev: { label: '聊天总览', href: '/docs/zh/chat/index.html' },
+    next: { label: '原生Gemini格式', href: '/docs/zh/chat/gemini/index.html' },
+  },
+  '/docs/zh/chat/gemini/index.html': {
+    prev: { label: '原生Claude格式', href: '/docs/zh/chat/createmessage/index.html' },
+    next: { label: 'Gemini文本聊天', href: '/docs/zh/chat/gemini/geminirelayv1beta/index.html' },
+  },
+  '/docs/zh/chat/gemini/geminirelayv1beta/index.html': {
+    prev: { label: '原生Gemini格式', href: '/docs/zh/chat/gemini/index.html' },
+    next: { label: 'Gemini媒体识别', href: '/docs/zh/chat/gemini/geminirelayv1beta-391536411/index.html' },
+  },
+  '/docs/zh/chat/gemini/geminirelayv1beta-391536411/index.html': {
+    prev: { label: 'Gemini文本聊天', href: '/docs/zh/chat/gemini/geminirelayv1beta/index.html' },
+    next: { label: '原生OpenAI格式', href: '/docs/zh/chat/openai/index.html' },
+  },
+  '/docs/zh/chat/openai/index.html': {
+    prev: { label: 'Gemini媒体识别', href: '/docs/zh/chat/gemini/geminirelayv1beta-391536411/index.html' },
+    next: { label: 'ChatCompletions', href: '/docs/zh/chat/openai/createchatcompletion/index.html' },
+  },
+  '/docs/zh/chat/openai/createchatcompletion/index.html': {
+    prev: { label: '原生OpenAI格式', href: '/docs/zh/chat/openai/index.html' },
+    next: { label: 'Responses', href: '/docs/zh/chat/openai/createresponses/index.html' },
+  },
+  '/docs/zh/chat/openai/createresponses/index.html': {
+    prev: { label: 'ChatCompletions', href: '/docs/zh/chat/openai/createchatcompletion/index.html' },
+    next: { label: 'Completions', href: '/docs/zh/completions/index.html' },
+  },
+  '/docs/zh/completions/index.html': {
+    prev: { label: 'Responses', href: '/docs/zh/chat/openai/createresponses/index.html' },
+    next: { label: 'Embeddings', href: '/docs/zh/embeddings/index.html' },
+  },
+  '/docs/zh/embeddings/index.html': {
+    prev: { label: 'Completions', href: '/docs/zh/completions/index.html' },
+    next: { label: 'Rerank', href: '/docs/zh/rerank/index.html' },
+  },
+  '/docs/zh/rerank/index.html': {
+    prev: { label: 'Embeddings', href: '/docs/zh/embeddings/index.html' },
+    next: { label: 'Moderations', href: '/docs/zh/moderations/index.html' },
+  },
+  '/docs/zh/moderations/index.html': {
+    prev: { label: 'Rerank', href: '/docs/zh/rerank/index.html' },
+    next: { label: 'Audio', href: '/docs/zh/audio/index.html' },
+  },
+  '/docs/zh/audio/index.html': {
+    prev: { label: 'Moderations', href: '/docs/zh/moderations/index.html' },
+    next: { label: '文本转语音', href: '/docs/zh/audio/openai/createspeech/index.html' },
+  },
+  '/docs/zh/audio/openai/createspeech/index.html': {
+    prev: { label: 'Audio 总览', href: '/docs/zh/audio/index.html' },
+    next: {
+      label: '音频转录',
+      href: '/docs/zh/audio/openai/createtranscription/index.html',
+    },
+  },
+  '/docs/zh/audio/openai/createtranscription/index.html': {
+    prev: {
+      label: '文本转语音',
+      href: '/docs/zh/audio/openai/createspeech/index.html',
+    },
+    next: {
+      label: '音频翻译',
+      href: '/docs/zh/audio/openai/createtranslation/index.html',
+    },
+  },
+  '/docs/zh/audio/openai/createtranslation/index.html': {
+    prev: {
+      label: '音频转录',
+      href: '/docs/zh/audio/openai/createtranscription/index.html',
+    },
+    next: { label: 'Realtime', href: '/docs/zh/realtime/index.html' },
+  },
+  '/docs/zh/realtime/index.html': {
+    prev: {
+      label: '音频翻译',
+      href: '/docs/zh/audio/openai/createtranslation/index.html',
+    },
+    next: { label: 'Images 总览', href: '/docs/zh/images/index.html' },
+  },
+  '/docs/zh/images/index.html': {
+    prev: { label: 'Realtime', href: '/docs/zh/realtime/index.html' },
+    next: {
+      label: '图像生成',
+      href: '/docs/zh/images/openai/post-v1-images-generations/index.html',
+    },
+  },
+  '/docs/zh/images/openai/post-v1-images-generations/index.html': {
+    prev: { label: 'Images 总览', href: '/docs/zh/images/index.html' },
+    next: {
+      label: '图像编辑',
+      href: '/docs/zh/images/openai/post-v1-images-edits/index.html',
+    },
+  },
+  '/docs/zh/images/openai/post-v1-images-edits/index.html': {
+    prev: {
+      label: '图像生成',
+      href: '/docs/zh/images/openai/post-v1-images-generations/index.html',
+    },
+    next: { label: 'Videos 总览', href: '/docs/zh/videos/index.html' },
+  },
+  '/docs/zh/videos/index.html': {
+    prev: {
+      label: '图像编辑',
+      href: '/docs/zh/images/openai/post-v1-images-edits/index.html',
+    },
+    next: {
+      label: '创建视频任务',
+      href: '/docs/zh/videos/sora/createvideo/index.html',
+    },
+  },
+  '/docs/zh/videos/sora/createvideo/index.html': {
+    prev: { label: 'Videos 总览', href: '/docs/zh/videos/index.html' },
+    next: { label: '查询视频状态', href: '/docs/zh/videos/sora/getvideo/index.html' },
+  },
+  '/docs/zh/videos/sora/getvideo/index.html': {
+    prev: { label: '创建视频任务', href: '/docs/zh/videos/sora/createvideo/index.html' },
+    next: {
+      label: '获取视频内容',
+      href: '/docs/zh/videos/sora/getvideocontent/index.html',
+    },
+  },
+  '/docs/zh/videos/sora/getvideocontent/index.html': {
+    prev: { label: '查询视频状态', href: '/docs/zh/videos/sora/getvideo/index.html' },
+    next: { label: 'API参考首页', href: '/docs/zh/index.html' },
+  },
+};
+
+function normalizeDocPath(pathname) {
+  var normalizedPath = pathname || '';
+  if (normalizedPath && normalizedPath.slice(-1) === '/') {
+    normalizedPath += 'index.html';
+  } else if (normalizedPath && normalizedPath.indexOf('.html') === -1) {
+    normalizedPath += '/index.html';
+  }
+  return normalizedPath;
+}
+
+function createDocMetaCard(title, links) {
+  var card = document.createElement('div');
+  card.className = 'doc-meta-card';
+
+  var titleEl = document.createElement('div');
+  titleEl.className = 'doc-meta-title';
+  titleEl.textContent = title;
+  card.appendChild(titleEl);
+
+  var linksWrap = document.createElement('div');
+  linksWrap.className = 'doc-meta-links';
+
+  for (var i = 0; i < links.length; i++) {
+    var item = links[i] || {};
+    var linkEl = document.createElement('a');
+    linkEl.className = 'doc-meta-link';
+    linkEl.textContent = item.label || '查看详情';
+
+    if (item.url) {
+      linkEl.href = item.url;
+      linkEl.target = '_blank';
+      linkEl.rel = 'noopener noreferrer';
+    } else {
+      linkEl.href = item.href || '#';
+    }
+
+    linksWrap.appendChild(linkEl);
+  }
+
+  card.appendChild(linksWrap);
+  return card;
+}
+
+function injectDocMetaSection() {
+  var pathname = window.location.pathname || '';
+  var normalizedPath = normalizeDocPath(pathname);
+
+  var meta = DOC_PAGE_META[pathname] || DOC_PAGE_META[normalizedPath];
+  if (!meta || document.getElementById('docMetaSection')) return;
+
+  var mainEl = document.querySelector('main.page');
+  if (!mainEl) return;
+
+  var sectionEl = document.createElement('section');
+  sectionEl.className = 'section doc-meta-section';
+  sectionEl.id = 'docMetaSection';
+
+  var titleEl = document.createElement('h2');
+  titleEl.className = 'section-title';
+  titleEl.textContent = '文档对照';
+  sectionEl.appendChild(titleEl);
+
+  var descEl = document.createElement('p');
+  descEl.className = 'section-desc';
+  descEl.textContent =
+    '以下链接可帮助你在本地文档与 New API 官网文档之间快速对照。';
+  sectionEl.appendChild(descEl);
+
+  var gridEl = document.createElement('div');
+  gridEl.className = 'doc-meta-grid';
+
+  if (meta.officialLinks && meta.officialLinks.length) {
+    gridEl.appendChild(createDocMetaCard('官网对应页面', meta.officialLinks));
+  }
+
+  if (meta.relatedLinks && meta.relatedLinks.length) {
+    gridEl.appendChild(createDocMetaCard('本地相关页面', meta.relatedLinks));
+  }
+
+  sectionEl.appendChild(gridEl);
+
+  var testSection = mainEl.querySelector('.test-section');
+  if (testSection) {
+    mainEl.insertBefore(sectionEl, testSection);
+  } else {
+    mainEl.appendChild(sectionEl);
+  }
+}
+
+function injectDocTocSection() {
+  var mainEl = document.querySelector('main.page');
+  if (!mainEl || document.getElementById('docTocSection')) return;
+
+  var sectionTitleEls = mainEl.querySelectorAll('.section .section-title');
+  if (!sectionTitleEls || sectionTitleEls.length < 3) return;
+
+  var tocItems = [];
+  for (var i = 0; i < sectionTitleEls.length; i++) {
+    var titleEl = sectionTitleEls[i];
+    var sectionEl = titleEl.closest('.section');
+    if (!sectionEl) continue;
+
+    if (
+      sectionEl.id === 'docTocSection' ||
+      sectionEl.id === 'docMetaSection' ||
+      sectionEl.id === 'docPagerSection'
+    ) {
+      continue;
+    }
+
+    var sectionTitle = (titleEl.textContent || '').trim();
+    if (!sectionTitle) continue;
+
+    if (!sectionEl.id) {
+      sectionEl.id = 'doc-section-' + (tocItems.length + 1);
+    }
+
+    tocItems.push({
+      id: sectionEl.id,
+      title: sectionTitle,
+    });
+  }
+
+  if (!tocItems.length) return;
+
+  var sectionWrap = document.createElement('section');
+  sectionWrap.className = 'section doc-toc-section';
+  sectionWrap.id = 'docTocSection';
+
+  var tocTitle = document.createElement('h2');
+  tocTitle.className = 'section-title';
+  tocTitle.textContent = '页面目录';
+  sectionWrap.appendChild(tocTitle);
+
+  var tocList = document.createElement('div');
+  tocList.className = 'doc-toc-list';
+
+  for (var j = 0; j < tocItems.length; j++) {
+    var item = tocItems[j];
+    var link = document.createElement('a');
+    link.className = 'doc-toc-link';
+    link.href = '#' + item.id;
+    link.textContent = item.title;
+    tocList.appendChild(link);
+  }
+
+  sectionWrap.appendChild(tocList);
+
+  var firstSection = mainEl.querySelector('.section');
+  if (firstSection) {
+    mainEl.insertBefore(sectionWrap, firstSection);
+  } else {
+    mainEl.appendChild(sectionWrap);
+  }
+}
+
+function createDocPagerLink(item, direction) {
+  var link = document.createElement('a');
+  link.className = 'doc-pager-link' + (direction === 'next' ? ' is-next' : '');
+  link.href = item.href;
+
+  var kicker = document.createElement('span');
+  kicker.className = 'doc-pager-kicker';
+  kicker.textContent = direction === 'next' ? '下一页' : '上一页';
+  link.appendChild(kicker);
+
+  var title = document.createElement('span');
+  title.className = 'doc-pager-title';
+  title.textContent = item.label || item.href;
+  link.appendChild(title);
+
+  return link;
+}
+
+function injectDocPagerSection() {
+  var pathname = window.location.pathname || '';
+  var normalizedPath = normalizeDocPath(pathname);
+  var flow = DOC_PAGE_FLOW[pathname] || DOC_PAGE_FLOW[normalizedPath];
+  if (!flow || document.getElementById('docPagerSection')) return;
+
+  var mainEl = document.querySelector('main.page');
+  if (!mainEl) return;
+
+  var sectionWrap = document.createElement('section');
+  sectionWrap.className = 'section doc-pager-section';
+  sectionWrap.id = 'docPagerSection';
+
+  var titleEl = document.createElement('h2');
+  titleEl.className = 'section-title';
+  titleEl.textContent = '页面导航';
+  sectionWrap.appendChild(titleEl);
+
+  var pagerGrid = document.createElement('div');
+  pagerGrid.className = 'doc-pager-grid';
+
+  if (flow.prev && flow.prev.href) {
+    pagerGrid.appendChild(createDocPagerLink(flow.prev, 'prev'));
+  }
+
+  if (flow.next && flow.next.href) {
+    pagerGrid.appendChild(createDocPagerLink(flow.next, 'next'));
+  }
+
+  if (!pagerGrid.children.length) return;
+
+  sectionWrap.appendChild(pagerGrid);
+  mainEl.appendChild(sectionWrap);
+}
+
 function resolveTestEndpointTemplate() {
   var pathname = window.location.pathname || '';
   if (API_TEST_ENDPOINT) return API_TEST_ENDPOINT;
@@ -156,6 +984,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   initModelSelector();
+  injectDocTocSection();
+  injectDocMetaSection();
+  injectDocPagerSection();
 });
 
 function scheduleModelReload() {

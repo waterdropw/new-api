@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>图像（Images）接口</title>
+    <title>图像（Images）接口总览</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="stylesheet" href="/docs/zh/shared.css" />
   </head>
@@ -15,83 +15,36 @@
       </nav>
 
       <header class="endpoint-header">
-        <div>
-          <span class="method-badge">POST</span>
-          <code class="endpoint-path"><span>/</span>v1<span>/</span>images<span>/</span>generations</code>
-        </div>
-        <h1>图像（Images）</h1>
-        <p class="subtitle">AI 图像生成与编辑接口，兼容 OpenAI Images 格式</p>
+        <div class="endpoint-icon">🖼️</div>
+        <h1>图像（Images）接口总览</h1>
+        <p class="subtitle">覆盖图像生成与图像编辑两类能力，兼容 OpenAI Images 接口格式。</p>
       </header>
 
       <section class="section">
-        <h2 class="section-title">接口说明</h2>
-        <p class="section-desc">
-          图像接口用于生成或编辑图像，兼容 OpenAI <code>/images/generations</code> 等接口的请求格式。
-        </p>
-        <div class="info-box">
-          实际可支持的模型、分辨率和输出格式以控制台与上游模型文档为准。
-        </div>
-      </section>
-
-      <section class="section">
-        <h2 class="section-title">认证</h2>
-        <p class="section-desc">使用 Bearer Token 认证，格式：<code>Authorization: Bearer sk-xxxxxx</code></p>
-      </section>
-
-      <section class="section">
-        <h2 class="section-title">请求体参数</h2>
+        <h2 class="section-title">能力覆盖</h2>
+        <p class="section-desc">生成接口为 JSON 请求，编辑接口为 multipart 上传，建议分页面阅读。</p>
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>参数</th>
-                <th>类型</th>
-                <th>必需</th>
-                <th>说明</th>
+                <th>能力</th>
+                <th>HTTP</th>
+                <th>路径</th>
+                <th>请求类型</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><code>model</code></td>
-                <td>string</td>
-                <td><span class="optional">否</span></td>
-                <td>模型名称，如 gpt-image-1、dall-e-3，默认 dall-e-2</td>
+                <td>图像生成</td>
+                <td><span class="method-badge">POST</span></td>
+                <td><code>/v1/images/generations</code></td>
+                <td>application/json</td>
               </tr>
               <tr>
-                <td><code>prompt</code></td>
-                <td>string</td>
-                <td><span class="required">是</span></td>
-                <td>图像描述文本，最大 4000 字符（dall-e-3）或 1000 字符（dall-e-2）</td>
-              </tr>
-              <tr>
-                <td><code>n</code></td>
-                <td>integer</td>
-                <td><span class="optional">否</span></td>
-                <td>生成图像数量，默认 1（dall-e-3 仅支持 1）</td>
-              </tr>
-              <tr>
-                <td><code>size</code></td>
-                <td>string</td>
-                <td><span class="optional">否</span></td>
-                <td>图像尺寸：256x256、512x512、1024x1024、1792x1024、1024x1792</td>
-              </tr>
-              <tr>
-                <td><code>quality</code></td>
-                <td>string</td>
-                <td><span class="optional">否</span></td>
-                <td>图像质量：standard 或 hd，默认 standard</td>
-              </tr>
-              <tr>
-                <td><code>response_format</code></td>
-                <td>string</td>
-                <td><span class="optional">否</span></td>
-                <td>返回格式：url 或 b64_json，默认 url</td>
-              </tr>
-              <tr>
-                <td><code>style</code></td>
-                <td>string</td>
-                <td><span class="optional">否</span></td>
-                <td>图像风格：vivid 或 natural，默认 vivid（仅 dall-e-3）</td>
+                <td>图像编辑</td>
+                <td><span class="method-badge">POST</span></td>
+                <td><code>/v1/images/edits</code></td>
+                <td>multipart/form-data</td>
               </tr>
             </tbody>
           </table>
@@ -99,108 +52,58 @@
       </section>
 
       <section class="section">
-        <h2 class="section-title">请求示例</h2>
-        <div class="code-block">
-          <div class="code-header">cURL</div>
-          <div class="code-content">
-            <pre><code>curl -X POST "https://your-base-url/v1/images/generations" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-xxxxxx" \
-  -d '{
-    "model": "gpt-image-1",
-    "prompt": "一幅带有星空和山峦的插画风景",
-    "size": "1024x1024",
-    "n": 1,
-    "quality": "standard"
-  }'</code></pre>
-          </div>
+        <h2 class="section-title">Endpoint 子页面</h2>
+        <p class="section-desc">每个 endpoint 页面提供独立参数说明、错误响应与调用示例。</p>
+        <div class="card-grid">
+          <a class="card" href="/docs/zh/images/openai/post-v1-images-generations/index.html">
+            <div class="card-icon">✨</div>
+            <h3 class="card-title">图像生成</h3>
+            <p class="card-desc">POST /v1/images/generations，支持在线测试。</p>
+            <div class="card-arrow">→</div>
+          </a>
+          <a class="card" href="/docs/zh/images/openai/post-v1-images-edits/index.html">
+            <div class="card-icon">🛠️</div>
+            <h3 class="card-title">图像编辑</h3>
+            <p class="card-desc">POST /v1/images/edits，multipart 上传图像与掩码。</p>
+            <div class="card-arrow">→</div>
+          </a>
         </div>
       </section>
 
       <section class="section">
-        <h2 class="section-title">响应示例</h2>
+        <h2 class="section-title">常见错误响应</h2>
         <div class="code-block">
-          <div class="code-header">200 OK</div>
+          <div class="code-header">400 Bad Request</div>
           <div class="code-content">
             <pre><code>{
-  "created": 1700000000,
-  "data": [
-    {
-      "url": "https://example.com/generated-image.png",
-      "revised_prompt": "一幅带有星空和山峦的插画风景..."
-    }
-  ]
+  "error": {
+    "message": "invalid image size",
+    "type": "invalid_request_error",
+    "param": "size",
+    "code": "invalid_size"
+  }
 }</code></pre>
           </div>
         </div>
       </section>
 
-      <!-- Online Test Section -->
-      <div class="test-section">
-        <div class="test-header" onclick="toggleTestSection()">
-          <div class="test-header-left">
-            <span class="test-header-title">在线测试</span>
-            <span class="test-header-desc">直接在此页面测试 API</span>
-          </div>
-          <button class="test-header-button" id="sendBtn" onclick="sendRequest(event)">
-            <span>发送请求</span>
-            <span class="method-badge-header">POST</span>
-          </button>
-          <svg class="test-toggle expanded" id="testToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
+      <section class="section">
+        <h2 class="section-title">相关接口</h2>
+        <div class="endpoint-list">
+          <a class="endpoint-item" href="/docs/zh/videos/sora/createvideo/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1/videos/generations</code>
+            <span>视频生成（可选图像作为输入）</span>
+          </a>
+          <a class="endpoint-item" href="/docs/zh/chat/gemini/geminirelayv1beta-391536411/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1beta/models/{model}:generateContent</code>
+            <span>Gemini 多模态识别</span>
+          </a>
         </div>
-        <div class="test-content expanded" id="testContent">
-          <div class="test-subsection">
-            <div class="test-subsection-header" onclick="toggleSubsection('auth')">
-              <svg class="test-subsection-toggle" id="authToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
-              <span class="test-subsection-title">Authorization</span>
-            </div>
-            <div class="test-subsection-content" id="authContent">
-              <div class="test-form-group">
-                <label class="test-label">Token</label>
-                <input type="text" class="test-input" id="authToken" placeholder="sk-xxxxxx">
-              </div>
-            </div>
-          </div>
-
-          <div class="test-subsection">
-            <div class="test-subsection-header" onclick="toggleSubsection('body')">
-              <svg class="test-subsection-toggle" id="bodyToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
-              <span class="test-subsection-title">Body</span>
-            </div>
-            <div class="test-subsection-content" id="bodyContent">
-              <div class="test-form-group">
-                <textarea class="test-input test-textarea" id="requestBody">{
-  "model": "gpt-image-1",
-  "prompt": "一幅带有星空和山峦的插画风景",
-  "size": "1024x1024",
-  "n": 1,
-  "quality": "standard"
-}</textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="test-response" id="responseArea" style="display: none;">
-            <div class="test-response-header">
-              <span class="test-response-status" id="responseStatus"></span>
-            </div>
-            <div class="test-response-body">
-              <pre id="responseBody"></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      </section>
     </main>
+
     <script src="/docs/zh/shared.js"></script>
-    <script>
-      var sendRequest = sendApiRequest('/v1/images/generations');
-    </script>
   </body>
 </html>

@@ -239,11 +239,48 @@
             <p class="card-desc">内容安全审核 / Moderation，检测敏感内容</p>
           </a>
 
-          <a class="card" href="/docs/zh/audio/index.html">
-            <div class="card-icon">🎵</div>
-            <h3 class="card-title">音频</h3>
-            <p class="card-desc">语音识别与语音合成，支持转录和生成语音</p>
-          </a>
+          <div class="folder-wrapper">
+            <div class="folder-card" onclick="toggleFolder(this, 'audio-subpages')">
+              <div class="folder-icon">🎵</div>
+              <div class="folder-content">
+                <h3 class="folder-title">音频</h3>
+                <p class="folder-desc">语音合成、转录、翻译等 Audio 系列接口</p>
+              </div>
+              <svg class="folder-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+            <div id="audio-subpages" class="subpage-list">
+              <a class="subpage-item" href="/docs/zh/audio/index.html">
+                <span class="subpage-item-icon">🧭</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">音频总览</div>
+                  <div class="subpage-item-desc">查看 Audio 全部能力与子接口</div>
+                </div>
+              </a>
+              <a class="subpage-item" href="/docs/zh/audio/openai/createspeech/index.html">
+                <span class="subpage-item-icon">🔊</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">文本转语音</div>
+                  <div class="subpage-item-desc">POST /v1/audio/speech</div>
+                </div>
+              </a>
+              <a class="subpage-item" href="/docs/zh/audio/openai/createtranscription/index.html">
+                <span class="subpage-item-icon">📝</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">音频转录</div>
+                  <div class="subpage-item-desc">POST /v1/audio/transcriptions</div>
+                </div>
+              </a>
+              <a class="subpage-item" href="/docs/zh/audio/openai/createtranslation/index.html">
+                <span class="subpage-item-icon">🌐</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">音频翻译</div>
+                  <div class="subpage-item-desc">POST /v1/audio/translations</div>
+                </div>
+              </a>
+            </div>
+          </div>
 
           <a class="card" href="/docs/zh/realtime/index.html">
             <div class="card-icon">⚡</div>
@@ -251,17 +288,84 @@
             <p class="card-desc">Realtime / 流式音频接口，低延迟语音对话</p>
           </a>
 
-          <a class="card" href="/docs/zh/images/index.html">
-            <div class="card-icon">🖼️</div>
-            <h3 class="card-title">图像</h3>
-            <p class="card-desc">AI 图像生成与编辑，支持文生图能力</p>
-          </a>
+          <div class="folder-wrapper">
+            <div class="folder-card" onclick="toggleFolder(this, 'images-subpages')">
+              <div class="folder-icon">🖼️</div>
+              <div class="folder-content">
+                <h3 class="folder-title">图像</h3>
+                <p class="folder-desc">图像生成与编辑能力，兼容 OpenAI Images 风格</p>
+              </div>
+              <svg class="folder-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+            <div id="images-subpages" class="subpage-list">
+              <a class="subpage-item" href="/docs/zh/images/index.html">
+                <span class="subpage-item-icon">🧭</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">图像总览</div>
+                  <div class="subpage-item-desc">查看 Images 能力矩阵与子接口</div>
+                </div>
+              </a>
+              <a class="subpage-item" href="/docs/zh/images/openai/post-v1-images-generations/index.html">
+                <span class="subpage-item-icon">✨</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">图像生成</div>
+                  <div class="subpage-item-desc">POST /v1/images/generations</div>
+                </div>
+              </a>
+              <a class="subpage-item" href="/docs/zh/images/openai/post-v1-images-edits/index.html">
+                <span class="subpage-item-icon">🛠️</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">图像编辑</div>
+                  <div class="subpage-item-desc">POST /v1/images/edits</div>
+                </div>
+              </a>
+            </div>
+          </div>
 
-          <a class="card" href="/docs/zh/videos/index.html">
-            <div class="card-icon">🎬</div>
-            <h3 class="card-title">视频</h3>
-            <p class="card-desc">视频生成和处理接口</p>
-          </a>
+          <div class="folder-wrapper">
+            <div class="folder-card" onclick="toggleFolder(this, 'videos-subpages')">
+              <div class="folder-icon">🎬</div>
+              <div class="folder-content">
+                <h3 class="folder-title">视频</h3>
+                <p class="folder-desc">创建任务、查询状态、下载内容的完整链路</p>
+              </div>
+              <svg class="folder-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+            <div id="videos-subpages" class="subpage-list">
+              <a class="subpage-item" href="/docs/zh/videos/index.html">
+                <span class="subpage-item-icon">🧭</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">视频总览</div>
+                  <div class="subpage-item-desc">查看 Videos 能力与流程</div>
+                </div>
+              </a>
+              <a class="subpage-item" href="/docs/zh/videos/sora/createvideo/index.html">
+                <span class="subpage-item-icon">🚀</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">创建视频任务</div>
+                  <div class="subpage-item-desc">POST /v1/videos/generations</div>
+                </div>
+              </a>
+              <a class="subpage-item" href="/docs/zh/videos/sora/getvideo/index.html">
+                <span class="subpage-item-icon">📋</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">查询视频状态</div>
+                  <div class="subpage-item-desc">GET /v1/videos/{task_id}</div>
+                </div>
+              </a>
+              <a class="subpage-item" href="/docs/zh/videos/sora/getvideocontent/index.html">
+                <span class="subpage-item-icon">⬇️</span>
+                <div class="subpage-item-content">
+                  <div class="subpage-item-title">获取视频内容</div>
+                  <div class="subpage-item-desc">GET /v1/videos/{task_id}/content</div>
+                </div>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

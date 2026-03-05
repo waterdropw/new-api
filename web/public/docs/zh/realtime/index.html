@@ -20,22 +20,23 @@
           <code class="endpoint-path"><span>/</span>v1<span>/</span>realtime</code>
         </div>
         <h1>实时语音（Realtime）</h1>
-        <p class="subtitle">流式音频 / 实时对话接口，低延迟语音对话体验</p>
+        <p class="subtitle">流式音频 / 实时对话接口，支持低延迟语音交互与边听边说体验。</p>
       </header>
 
       <section class="section">
         <h2 class="section-title">接口说明</h2>
         <p class="section-desc">
-          实时语音接口用于构建低延迟的语音对话体验，通过 WebSocket 方式提供连续音频流。适用于实时语音助手、实时翻译等需要低延迟音频交互的场景。
+          Realtime 接口通过 WebSocket 建立长连接，围绕事件流进行会话控制、音频上传与响应接收。
+          适用于语音助手、同传、语音客服等低延迟场景。
         </p>
         <div class="info-box">
-          该接口使用 WebSocket 协议，不是标准的 HTTP REST 接口。需要使用支持 WebSocket 的客户端进行连接。
+          该接口不是标准 REST 请求。你需要支持 WebSocket 的客户端（浏览器、Node.js、websocat、SDK）发起连接。
         </div>
       </section>
 
       <section class="section">
         <h2 class="section-title">认证</h2>
-        <p class="section-desc">通过查询参数或请求头传递认证信息：</p>
+        <p class="section-desc">可通过 URL 查询参数或 Authorization 请求头传递令牌：</p>
         <div class="table-container">
           <table>
             <thead>
@@ -54,7 +55,7 @@
               <tr>
                 <td>请求头</td>
                 <td><code>Authorization: Bearer sk-xxxxxx</code></td>
-                <td>部分 WebSocket 客户端支持自定义请求头</td>
+                <td>更推荐的方式，避免令牌出现在 URL 日志中</td>
               </tr>
             </tbody>
           </table>
@@ -78,10 +79,95 @@
                 <td><code>model</code></td>
                 <td>string (query)</td>
                 <td><span class="required">是</span></td>
-                <td>模型名称，如 gpt-4o-realtime-preview</td>
+                <td>模型名称，如 <code>gpt-4o-realtime-preview</code></td>
+              </tr>
+              <tr>
+                <td><code>token</code></td>
+                <td>string (query)</td>
+                <td><span class="optional">否</span></td>
+                <td>仅在使用 URL 鉴权时传入；若用 Header 可省略</td>
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">连接 URL 构造器</h2>
+        <p class="section-desc">可快速拼出可连接的 WebSocket 地址，并生成对应的 websocat 命令。</p>
+
+        <div class="realtime-builder-grid">
+          <div class="test-form-group">
+            <label class="test-label" for="realtimeBaseUrl">服务器地址</label>
+            <input id="realtimeBaseUrl" class="test-input" type="text" placeholder="https://your-base-url" />
+          </div>
+          <div class="test-form-group">
+            <label class="test-label" for="realtimeModel">模型</label>
+            <input id="realtimeModel" class="test-input" type="text" value="gpt-4o-realtime-preview" />
+          </div>
+          <div class="test-form-group">
+            <label class="test-label" for="realtimeToken">Token</label>
+            <input id="realtimeToken" class="test-input" type="text" placeholder="sk-xxxxxx" />
+          </div>
+          <div class="test-form-group">
+            <label class="test-label" for="realtimeAuthMode">鉴权方式</label>
+            <select id="realtimeAuthMode" class="test-input">
+              <option value="query">URL 查询参数（token）</option>
+              <option value="header">Authorization Header</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="realtime-preview-card">
+          <div class="realtime-preview-title">WebSocket URL</div>
+          <code id="realtimeUrlOutput" class="realtime-preview-code"></code>
+        </div>
+
+        <div class="realtime-preview-card">
+          <div class="realtime-preview-title">websocat 示例</div>
+          <pre id="realtimeCmdOutput" class="realtime-preview-pre"></pre>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">最小事件流程</h2>
+        <p class="section-desc">推荐按以下顺序串联事件，先打通最小闭环再扩展功能。</p>
+        <div class="realtime-flow-list">
+          <div class="realtime-flow-item">
+            <span class="realtime-flow-step">1</span>
+            <div>
+              <div class="realtime-flow-title">建立连接</div>
+              <div class="realtime-flow-desc">连接 <code>wss://.../v1/realtime?model=...</code> 并完成鉴权。</div>
+            </div>
+          </div>
+          <div class="realtime-flow-item">
+            <span class="realtime-flow-step">2</span>
+            <div>
+              <div class="realtime-flow-title">发送 <code>session.update</code></div>
+              <div class="realtime-flow-desc">配置语音、模态、VAD、系统提示词等会话参数。</div>
+            </div>
+          </div>
+          <div class="realtime-flow-item">
+            <span class="realtime-flow-step">3</span>
+            <div>
+              <div class="realtime-flow-title">上传音频缓冲</div>
+              <div class="realtime-flow-desc">发送 <code>input_audio_buffer.append</code>，结束后发送 <code>input_audio_buffer.commit</code>。</div>
+            </div>
+          </div>
+          <div class="realtime-flow-item">
+            <span class="realtime-flow-step">4</span>
+            <div>
+              <div class="realtime-flow-title">触发生成</div>
+              <div class="realtime-flow-desc">发送 <code>response.create</code> 请求模型输出。</div>
+            </div>
+          </div>
+          <div class="realtime-flow-item">
+            <span class="realtime-flow-step">5</span>
+            <div>
+              <div class="realtime-flow-title">接收增量结果</div>
+              <div class="realtime-flow-desc">处理 <code>response.audio.delta</code> / <code>response.text.delta</code>，直到 <code>response.done</code>。</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -95,10 +181,7 @@
   ['realtime', 'openai-insecure-api-key.sk-xxxxxx', 'openai-beta.realtime-v1']
 );
 
-ws.onopen = function() {
-  console.log('连接已建立');
-
-  // 发送会话配置
+ws.onopen = function () {
   ws.send(JSON.stringify({
     type: 'session.update',
     session: {
@@ -114,49 +197,27 @@ ws.onopen = function() {
   }));
 };
 
-ws.onmessage = function(event) {
+ws.onmessage = function (event) {
   const data = JSON.parse(event.data);
-  console.log('收到消息:', data.type);
-
   switch (data.type) {
     case 'session.created':
       console.log('会话已创建');
       break;
     case 'response.audio.delta':
-      // 处理音频数据
+      // 播放音频增量
       break;
     case 'response.text.delta':
-      // 处理文本数据
+      // 渲染文本增量
       break;
   }
-};
-
-ws.onerror = function(error) {
-  console.error('WebSocket 错误:', error);
-};
-
-ws.onclose = function() {
-  console.log('连接已关闭');
 };</code></pre>
           </div>
         </div>
       </section>
 
       <section class="section">
-        <h2 class="section-title">cURL 连接示例</h2>
-        <div class="code-block">
-          <div class="code-header">cURL (websocat)</div>
-          <div class="code-content">
-            <pre><code># 使用 websocat 工具连接
-websocat "wss://your-base-url/v1/realtime?model=gpt-4o-realtime-preview" \
-  -H "Authorization: Bearer sk-xxxxxx"</code></pre>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
         <h2 class="section-title">事件类型</h2>
-        <p class="section-desc">WebSocket 通信基于事件消息，以下是常用的事件类型：</p>
+        <p class="section-desc">常见事件如下，建议先实现核心事件再逐步补齐边界事件。</p>
         <div class="table-container">
           <table>
             <thead>
@@ -180,17 +241,17 @@ websocat "wss://your-base-url/v1/realtime?model=gpt-4o-realtime-preview" \
               <tr>
                 <td><code>input_audio_buffer.append</code></td>
                 <td>客户端 → 服务端</td>
-                <td>追加音频数据到输入缓冲区</td>
+                <td>追加音频帧到输入缓冲区</td>
               </tr>
               <tr>
                 <td><code>input_audio_buffer.commit</code></td>
                 <td>客户端 → 服务端</td>
-                <td>提交音频缓冲区</td>
+                <td>提交音频缓冲区，准备推理</td>
               </tr>
               <tr>
                 <td><code>response.create</code></td>
                 <td>客户端 → 服务端</td>
-                <td>请求生成响应</td>
+                <td>触发模型生成响应</td>
               </tr>
               <tr>
                 <td><code>response.audio.delta</code></td>
@@ -205,13 +266,152 @@ websocat "wss://your-base-url/v1/realtime?model=gpt-4o-realtime-preview" \
               <tr>
                 <td><code>response.done</code></td>
                 <td>服务端 → 客户端</td>
-                <td>响应完成</td>
+                <td>本轮响应结束</td>
               </tr>
             </tbody>
           </table>
         </div>
       </section>
 
+      <section class="section">
+        <h2 class="section-title">常见错误响应</h2>
+        <div class="code-block">
+          <div class="code-header">401 Unauthorized</div>
+          <div class="code-content">
+            <pre><code>{
+  "error": {
+    "message": "invalid api key",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "invalid_api_key"
+  }
+}</code></pre>
+          </div>
+        </div>
+        <div class="code-block" style="margin-top: 12px;">
+          <div class="code-header">409 Conflict</div>
+          <div class="code-content">
+            <pre><code>{
+  "error": {
+    "message": "session has reached concurrency limit",
+    "type": "rate_limit_error",
+    "param": null,
+    "code": "session_limit_exceeded"
+  }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">相关接口</h2>
+        <div class="endpoint-list">
+          <a class="endpoint-item" href="/docs/zh/audio/openai/createspeech/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1/audio/speech</code>
+            <span>文本转语音</span>
+          </a>
+          <a class="endpoint-item" href="/docs/zh/chat/openai/createchatcompletion/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1/chat/completions</code>
+            <span>聊天补全（可与实时会话结合）</span>
+          </a>
+        </div>
+      </section>
     </main>
+
+    <script src="/docs/zh/shared.js"></script>
+    <script>
+      (function () {
+        function normalizeBase(input) {
+          var value = (input || '').trim();
+          if (!value) return '';
+          if (value.indexOf('ws://') === 0 || value.indexOf('wss://') === 0) {
+            return value.replace(/\/+$/, '');
+          }
+          if (value.indexOf('https://') === 0) {
+            return ('wss://' + value.slice(8)).replace(/\/+$/, '');
+          }
+          if (value.indexOf('http://') === 0) {
+            return ('ws://' + value.slice(7)).replace(/\/+$/, '');
+          }
+          return ('wss://' + value.replace(/^\/+/, '')).replace(/\/+$/, '');
+        }
+
+        function safeEncode(value) {
+          return encodeURIComponent((value || '').trim());
+        }
+
+        function buildRealtimeUrl(base, model, token, authMode) {
+          var wsBase = normalizeBase(base);
+          if (!wsBase) return '';
+
+          var queryParts = ['model=' + safeEncode(model || 'gpt-4o-realtime-preview')];
+          if (authMode === 'query' && token) {
+            queryParts.push('token=' + safeEncode(token));
+          }
+
+          return wsBase + '/v1/realtime?' + queryParts.join('&');
+        }
+
+        function updateRealtimeBuilder() {
+          var baseEl = document.getElementById('realtimeBaseUrl');
+          var modelEl = document.getElementById('realtimeModel');
+          var tokenEl = document.getElementById('realtimeToken');
+          var modeEl = document.getElementById('realtimeAuthMode');
+          var urlOutputEl = document.getElementById('realtimeUrlOutput');
+          var cmdOutputEl = document.getElementById('realtimeCmdOutput');
+          if (!baseEl || !modelEl || !tokenEl || !modeEl || !urlOutputEl || !cmdOutputEl) return;
+
+          var base = baseEl.value;
+          var model = modelEl.value || 'gpt-4o-realtime-preview';
+          var token = tokenEl.value.trim();
+          var mode = modeEl.value;
+
+          var wsUrl = buildRealtimeUrl(base, model, token, mode);
+          urlOutputEl.textContent = wsUrl || '请填写服务器地址';
+
+          var cmd = 'websocat "' + (wsUrl || 'wss://your-base-url/v1/realtime?model=' + model) + '"';
+          if (mode === 'header') {
+            cmd += token
+              ? ' \\\n  -H "Authorization: Bearer ' + token + '"'
+              : ' \\\n  -H "Authorization: Bearer sk-xxxxxx"';
+          }
+          cmdOutputEl.textContent = cmd;
+        }
+
+        function readDefaultServerAddress() {
+          var statusText = localStorage.getItem('status');
+          if (!statusText) return window.location.origin || '';
+          try {
+            var parsed = JSON.parse(statusText);
+            if (parsed && parsed.server_address) {
+              return parsed.server_address;
+            }
+          } catch (error) {
+            return window.location.origin || '';
+          }
+          return window.location.origin || '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+          var baseEl = document.getElementById('realtimeBaseUrl');
+          var modelEl = document.getElementById('realtimeModel');
+          var tokenEl = document.getElementById('realtimeToken');
+          var modeEl = document.getElementById('realtimeAuthMode');
+          if (!baseEl || !modelEl || !tokenEl || !modeEl) return;
+
+          baseEl.value = readDefaultServerAddress();
+          tokenEl.value = localStorage.getItem('api_test_token') || '';
+
+          baseEl.addEventListener('input', updateRealtimeBuilder);
+          modelEl.addEventListener('input', updateRealtimeBuilder);
+          tokenEl.addEventListener('input', updateRealtimeBuilder);
+          modeEl.addEventListener('change', updateRealtimeBuilder);
+
+          updateRealtimeBuilder();
+        });
+      })();
+    </script>
   </body>
 </html>

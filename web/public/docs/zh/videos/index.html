@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>视频（Videos）接口</title>
+    <title>视频（Videos）接口总览</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="stylesheet" href="/docs/zh/shared.css" />
   </head>
@@ -15,71 +15,42 @@
       </nav>
 
       <header class="endpoint-header">
-        <div>
-          <span class="method-badge">POST</span>
-          <code class="endpoint-path"><span>/</span>v1<span>/</span>videos<span>/</span>generations</code>
-        </div>
-        <h1>视频（Videos）</h1>
-        <p class="subtitle">基于文本或图像生成短视频，或对现有视频进行编辑和变换</p>
+        <div class="endpoint-icon">🎬</div>
+        <h1>视频（Videos）接口总览</h1>
+        <p class="subtitle">覆盖视频任务创建、状态查询、内容下载三个阶段，兼容 Sora 风格路径。</p>
       </header>
 
       <section class="section">
-        <h2 class="section-title">接口说明</h2>
-        <p class="section-desc">
-          视频接口用于基于文本或图像生成短视频，或对现有视频进行编辑和变换。
-        </p>
-        <div class="info-box">
-          视频生成功能依赖具体模型支持，可用模型请参考控制台配置。
-        </div>
-      </section>
-
-      <section class="section">
-        <h2 class="section-title">认证</h2>
-        <p class="section-desc">使用 Bearer Token 认证，格式：<code>Authorization: Bearer sk-xxxxxx</code></p>
-      </section>
-
-      <section class="section">
-        <h2 class="section-title">请求体参数</h2>
+        <h2 class="section-title">能力覆盖</h2>
+        <p class="section-desc">视频接口是典型异步任务链路，建议按阶段阅读对应 endpoint 页面。</p>
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>参数</th>
-                <th>类型</th>
-                <th>必需</th>
+                <th>阶段</th>
+                <th>HTTP</th>
+                <th>路径</th>
                 <th>说明</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><code>model</code></td>
-                <td>string</td>
-                <td><span class="required">是</span></td>
-                <td>模型名称</td>
+                <td>创建任务</td>
+                <td><span class="method-badge">POST</span></td>
+                <td><code>/v1/videos</code> / <code>/v1/videos/generations</code></td>
+                <td>提交文生视频或图生视频请求</td>
               </tr>
               <tr>
-                <td><code>prompt</code></td>
-                <td>string</td>
-                <td><span class="required">是</span></td>
-                <td>视频描述文本</td>
+                <td>查询状态</td>
+                <td><span class="method-badge method-badge-get">GET</span></td>
+                <td><code>/v1/videos/{task_id}</code></td>
+                <td>轮询任务状态与进度</td>
               </tr>
               <tr>
-                <td><code>size</code></td>
-                <td>string</td>
-                <td><span class="optional">否</span></td>
-                <td>视频分辨率，如 1280x720、1920x1080</td>
-              </tr>
-              <tr>
-                <td><code>duration</code></td>
-                <td>integer</td>
-                <td><span class="optional">否</span></td>
-                <td>视频时长（秒）</td>
-              </tr>
-              <tr>
-                <td><code>image</code></td>
-                <td>string</td>
-                <td><span class="optional">否</span></td>
-                <td>参考图像 URL（图生视频场景）</td>
+                <td>获取内容</td>
+                <td><span class="method-badge method-badge-get">GET</span></td>
+                <td><code>/v1/videos/{task_id}/content</code></td>
+                <td>下载最终视频流</td>
               </tr>
             </tbody>
           </table>
@@ -87,104 +58,64 @@
       </section>
 
       <section class="section">
-        <h2 class="section-title">请求示例</h2>
-        <div class="code-block">
-          <div class="code-header">cURL</div>
-          <div class="code-content">
-            <pre><code>curl -X POST "https://your-base-url/v1/videos/generations" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-xxxxxx" \
-  -d '{
-    "model": "video-model",
-    "prompt": "一只猫在草地上奔跑的慢动作视频",
-    "size": "1280x720"
-  }'</code></pre>
-          </div>
+        <h2 class="section-title">Endpoint 子页面</h2>
+        <p class="section-desc">每个 endpoint 页面独立维护参数、示例和错误响应。</p>
+        <div class="card-grid">
+          <a class="card" href="/docs/zh/videos/sora/createvideo/index.html">
+            <div class="card-icon">🚀</div>
+            <h3 class="card-title">创建视频任务</h3>
+            <p class="card-desc">POST /v1/videos/generations，提交视频生成任务。</p>
+            <div class="card-arrow">→</div>
+          </a>
+          <a class="card" href="/docs/zh/videos/sora/getvideo/index.html">
+            <div class="card-icon">📋</div>
+            <h3 class="card-title">查询视频任务</h3>
+            <p class="card-desc">GET /v1/videos/{task_id}，获取任务状态与结果信息。</p>
+            <div class="card-arrow">→</div>
+          </a>
+          <a class="card" href="/docs/zh/videos/sora/getvideocontent/index.html">
+            <div class="card-icon">⬇️</div>
+            <h3 class="card-title">下载视频内容</h3>
+            <p class="card-desc">GET /v1/videos/{task_id}/content，获取视频二进制流。</p>
+            <div class="card-arrow">→</div>
+          </a>
         </div>
       </section>
 
       <section class="section">
-        <h2 class="section-title">响应示例</h2>
+        <h2 class="section-title">常见错误响应</h2>
         <div class="code-block">
-          <div class="code-header">200 OK</div>
+          <div class="code-header">429 Too Many Requests</div>
           <div class="code-content">
             <pre><code>{
-  "created": 1700000000,
-  "data": [
-    {
-      "url": "https://example.com/generated-video.mp4",
-      "revised_prompt": "一只猫在草地上奔跑的慢动作视频..."
-    }
-  ]
+  "error": {
+    "message": "rate limit exceeded",
+    "type": "rate_limit_error",
+    "param": null,
+    "code": "rate_limit_exceeded"
+  }
 }</code></pre>
           </div>
         </div>
       </section>
 
-      <!-- Online Test Section -->
-      <div class="test-section">
-        <div class="test-header" onclick="toggleTestSection()">
-          <div class="test-header-left">
-            <span class="test-header-title">在线测试</span>
-            <span class="test-header-desc">直接在此页面测试 API</span>
-          </div>
-          <button class="test-header-button" id="sendBtn" onclick="sendRequest(event)">
-            <span>发送请求</span>
-            <span class="method-badge-header">POST</span>
-          </button>
-          <svg class="test-toggle expanded" id="testToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
+      <section class="section">
+        <h2 class="section-title">相关接口</h2>
+        <div class="endpoint-list">
+          <a class="endpoint-item" href="/docs/zh/images/openai/post-v1-images-generations/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1/images/generations</code>
+            <span>图像生成（图生视频前置能力）</span>
+          </a>
+          <a class="endpoint-item" href="/docs/zh/chat/openai/createchatcompletion/index.html">
+            <span class="endpoint-method">POST</span>
+            <code class="endpoint-url">/v1/chat/completions</code>
+            <span>提示词生成与优化</span>
+          </a>
         </div>
-        <div class="test-content expanded" id="testContent">
-          <div class="test-subsection">
-            <div class="test-subsection-header" onclick="toggleSubsection('auth')">
-              <svg class="test-subsection-toggle" id="authToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
-              <span class="test-subsection-title">Authorization</span>
-            </div>
-            <div class="test-subsection-content" id="authContent">
-              <div class="test-form-group">
-                <label class="test-label">Token</label>
-                <input type="text" class="test-input" id="authToken" placeholder="sk-xxxxxx">
-              </div>
-            </div>
-          </div>
-
-          <div class="test-subsection">
-            <div class="test-subsection-header" onclick="toggleSubsection('body')">
-              <svg class="test-subsection-toggle" id="bodyToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
-              <span class="test-subsection-title">Body</span>
-            </div>
-            <div class="test-subsection-content" id="bodyContent">
-              <div class="test-form-group">
-                <textarea class="test-input test-textarea" id="requestBody">{
-  "model": "video-model",
-  "prompt": "一只猫在草地上奔跑的慢动作视频",
-  "size": "1280x720"
-}</textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="test-response" id="responseArea" style="display: none;">
-            <div class="test-response-header">
-              <span class="test-response-status" id="responseStatus"></span>
-            </div>
-            <div class="test-response-body">
-              <pre id="responseBody"></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      </section>
     </main>
+
     <script src="/docs/zh/shared.js"></script>
-    <script>
-      var sendRequest = sendApiRequest('/v1/videos/generations');
-    </script>
   </body>
 </html>
