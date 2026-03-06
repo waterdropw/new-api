@@ -209,6 +209,140 @@
     <script>
       var currentFormat = 'openai';
 
+      function getListModelsEndpointSuffix() {
+        return currentFormat === 'gemini' ? '/v1beta/models' : '/v1/models';
+      }
+
+      function syncRequestUrlHint() {
+        API_TEST_ENDPOINT = getListModelsEndpointSuffix();
+        if (typeof updateBaseUrlDisplay === 'function') {
+          updateBaseUrlDisplay();
+        }
+      }
+
+      var formatModelAllowCache = {};
+
+      function getEndpointTypeByFormat(format) {
+        if (format === 'anthropic') return 'anthropic';
+        if (format === 'gemini') return 'gemini';
+        return 'openai';
+      }
+
+      function modelMatchesFormat(modelItem, endpointType) {
+        if (!modelItem || typeof modelItem !== 'object') return false;
+
+        var endpointTypes = modelItem.supported_endpoint_types;
+        if (!Array.isArray(endpointTypes) || endpointTypes.length === 0) {
+          return true;
+        }
+
+        var normalizedTypes = [];
+        for (var i = 0; i < endpointTypes.length; i++) {
+          if (typeof endpointTypes[i] === 'string') {
+            normalizedTypes.push(endpointTypes[i].toLowerCase());
+          }
+        }
+
+        if (endpointType === 'openai') {
+          return normalizedTypes.indexOf('openai') !== -1 || normalizedTypes.indexOf('openai-response') !== -1;
+        }
+
+        return normalizedTypes.indexOf(endpointType) !== -1;
+      }
+
+      function loadAllowedModelMap(token, format) {
+        if (format === 'openai') {
+          return Promise.resolve(null);
+        }
+
+        var cacheKey = API_BASE_URL + '|' + format + '|' + token;
+        if (formatModelAllowCache[cacheKey]) {
+          return Promise.resolve(formatModelAllowCache[cacheKey]);
+        }
+
+        return fetch(API_BASE_URL + '/v1/models', {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+          },
+        })
+          .then(function(response) {
+            return response.text().then(function(text) {
+              var payload = {};
+              if (text) {
+                payload = JSON.parse(text);
+              }
+
+              var data = payload && Array.isArray(payload.data) ? payload.data : [];
+              var endpointType = getEndpointTypeByFormat(format);
+              var allowedMap = {};
+
+              for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                if (!item || typeof item.id !== 'string') continue;
+                if (modelMatchesFormat(item, endpointType)) {
+                  allowedMap[item.id] = true;
+                }
+              }
+
+              formatModelAllowCache[cacheKey] = allowedMap;
+              return allowedMap;
+            });
+          })
+          .catch(function() {
+            return null;
+          });
+      }
+
+      function extractModelIdFromResultItem(item, format) {
+        if (!item || typeof item !== 'object') return '';
+
+        if (format === 'gemini') {
+          var name = typeof item.name === 'string' ? item.name : '';
+          if (!name && typeof item.displayName === 'string') {
+            name = item.displayName;
+          }
+          if (name.indexOf('models/') === 0) {
+            name = name.slice(7);
+          }
+          return name;
+        }
+
+        return typeof item.id === 'string' ? item.id : '';
+      }
+
+      function filterResponseByFormat(payload, format, allowedMap) {
+        if (!allowedMap || !payload || typeof payload !== 'object') {
+          return payload;
+        }
+
+        if (format === 'gemini') {
+          if (!Array.isArray(payload.models)) return payload;
+
+          payload.models = payload.models.filter(function(item) {
+            var modelId = extractModelIdFromResultItem(item, format);
+            return modelId && allowedMap[modelId];
+          });
+
+          return payload;
+        }
+
+        if (!Array.isArray(payload.data)) return payload;
+
+        payload.data = payload.data.filter(function(item) {
+          var modelId = extractModelIdFromResultItem(item, format);
+          return modelId && allowedMap[modelId];
+        });
+
+        if (format === 'anthropic') {
+          payload.first_id = payload.data.length ? payload.data[0].id : '';
+          payload.last_id = payload.data.length ? payload.data[payload.data.length - 1].id : '';
+          payload.has_more = false;
+        }
+
+        return payload;
+      }
+
       function selectFormat(el, format) {
         currentFormat = format;
         var opts = document.querySelectorAll('.format-opt');
@@ -221,6 +355,7 @@
         el.style.borderColor = 'var(--primary)';
         el.style.background = 'var(--primary-bg)';
         el.querySelector('input').checked = true;
+        syncRequestUrlHint();
       }
 
       // Init selected style
@@ -230,6 +365,7 @@
           sel.style.borderColor = 'var(--primary)';
           sel.style.background = 'var(--primary-bg)';
         }
+        syncRequestUrlHint();
       });
 
       function sendListModelsRequest(event) {
@@ -247,24 +383,35 @@
         responseArea.style.display = 'none';
 
         var headers = { 'Authorization': 'Bearer ' + token };
-        var endpoint = API_BASE_URL + '/v1/models';
+        var endpoint = API_BASE_URL + getListModelsEndpointSuffix();
 
         if (currentFormat === 'anthropic') {
           headers['x-api-key'] = token;
           headers['anthropic-version'] = '2023-06-01';
         } else if (currentFormat === 'gemini') {
           headers['x-goog-api-key'] = token;
-          endpoint = API_BASE_URL + '/v1beta/models';
         }
 
         fetch(endpoint, { method: 'GET', headers: headers })
           .then(function(response) {
-            return response.json().then(function(data) {
-              responseStatus.innerHTML = '<span class="' + (response.ok ? 'status-success' : 'status-error') + '">' + response.status + ' ' + response.statusText + '</span>' +
-                '<span style="color: var(--text-muted);">&middot;</span>' +
-                '<span style="color: var(--text-muted);">' + new Date().toLocaleTimeString() + '</span>';
-              responseBody.textContent = JSON.stringify(data, null, 2);
-              responseArea.style.display = 'block';
+            return response.text().then(function(text) {
+              var data = {};
+              if (text) {
+                try {
+                  data = JSON.parse(text);
+                } catch (error) {
+                  throw new Error('接口返回了非 JSON 响应');
+                }
+              }
+
+              return loadAllowedModelMap(token, currentFormat).then(function(allowedMap) {
+                var filteredData = filterResponseByFormat(data, currentFormat, allowedMap);
+                responseStatus.innerHTML = '<span class="' + (response.ok ? 'status-success' : 'status-error') + '">' + response.status + ' ' + response.statusText + '</span>' +
+                  '<span style="color: var(--text-muted);">&middot;</span>' +
+                  '<span style="color: var(--text-muted);">' + new Date().toLocaleTimeString() + '</span>';
+                responseBody.textContent = JSON.stringify(filteredData, null, 2);
+                responseArea.style.display = 'block';
+              });
             });
           })
           .catch(function(error) {

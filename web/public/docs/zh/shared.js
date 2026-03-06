@@ -985,7 +985,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initModelSelector();
   injectDocTocSection();
-  injectDocMetaSection();
   injectDocPagerSection();
 });
 
@@ -997,19 +996,77 @@ function scheduleModelReload() {
   }, 300);
 }
 
-function detectModelApiType() {
-  var pathname = window.location.pathname || '';
-  if (pathname.indexOf('/docs/zh/chat/gemini/') !== -1) {
+function normalizeModelApiType(value) {
+  var type = (value || '').toString().toLowerCase();
+  if (!type) return '';
+  if (type === 'anthropic' || type === 'claude' || type === 'messages') {
+    return 'anthropic';
+  }
+  if (type === 'gemini' || type === 'google') {
     return 'gemini';
   }
-  if (pathname.indexOf('/docs/zh/chat/createmessage/') !== -1) {
+  if (type === 'openai') {
+    return 'openai';
+  }
+  return '';
+}
+
+function detectModelApiTypeFromFormatSelector() {
+  var fromGlobal = normalizeModelApiType(window.currentFormat);
+  if (fromGlobal) return fromGlobal;
+
+  var checkedInput = document.querySelector('input[name="format"]:checked');
+  if (!checkedInput) return '';
+
+  return normalizeModelApiType(checkedInput.value);
+}
+
+function detectModelApiType() {
+  var fromFormatSelector = detectModelApiTypeFromFormatSelector();
+  if (fromFormatSelector) return fromFormatSelector;
+
+  var pathname = (window.location.pathname || '').toLowerCase();
+  if (pathname.indexOf('/docs/zh/chat/gemini') !== -1) {
+    return 'gemini';
+  }
+  if (
+    pathname.indexOf('/docs/zh/chat/createmessage') !== -1 ||
+    pathname.indexOf('/docs/zh/chat/claude') !== -1
+  ) {
     return 'anthropic';
   }
   return 'openai';
 }
 
 function getModelStorageKey() {
-  return 'api_test_model_' + (window.location.pathname || modelSelectorRefs.apiType);
+  var pathname = window.location.pathname || 'default';
+  return 'api_test_model_' + pathname + '_' + modelSelectorRefs.apiType;
+}
+
+function bindFormatModelTypeWatcher() {
+  if (!modelSelectorRefs.selectEl) return;
+
+  var syncFromFormat = function () {
+    var nextApiType = detectModelApiType();
+    if (!nextApiType || nextApiType === modelSelectorRefs.apiType) {
+      return;
+    }
+    modelSelectorRefs.apiType = nextApiType;
+    loadAvailableModels(true);
+  };
+
+  var formatInputs = document.querySelectorAll('input[name="format"]');
+  for (var i = 0; i < formatInputs.length; i++) {
+    formatInputs[i].addEventListener('change', syncFromFormat);
+    formatInputs[i].addEventListener('click', syncFromFormat);
+  }
+
+  var formatOptions = document.querySelectorAll('.format-opt');
+  for (var j = 0; j < formatOptions.length; j++) {
+    formatOptions[j].addEventListener('click', function () {
+      setTimeout(syncFromFormat, 0);
+    });
+  }
 }
 
 function getCurrentModelFromPage() {
@@ -1196,6 +1253,12 @@ function populateModelSelector(models) {
 function loadAvailableModels(forceReload) {
   if (!modelSelectorRefs.selectEl) return;
 
+  var detectedApiType = detectModelApiType();
+  if (detectedApiType && detectedApiType !== modelSelectorRefs.apiType) {
+    modelSelectorRefs.apiType = detectedApiType;
+    forceReload = true;
+  }
+
   var requestConfig = buildModelApiRequest(modelSelectorRefs.apiType);
   var cacheKey = modelSelectorRefs.apiType + '@' + API_BASE_URL;
 
@@ -1252,12 +1315,14 @@ function loadAvailableModels(forceReload) {
 }
 
 function initModelSelector() {
-  var bodyContent = document.getElementById('bodyContent');
-  if (!bodyContent) return;
-
   var requestBodyEl = document.getElementById('requestBody');
   var modelNameEl = document.getElementById('modelName');
-  if (!requestBodyEl && !modelNameEl) return;
+  var hasFormatSelector = !!document.querySelector('input[name="format"]');
+  if (!requestBodyEl && !modelNameEl && !hasFormatSelector) return;
+
+  var selectorContainer =
+    document.getElementById('bodyContent') || document.getElementById('formatContent');
+  if (!selectorContainer) return;
 
   if (!document.getElementById('modelSelector')) {
     var modelGroup = document.createElement('div');
@@ -1270,11 +1335,11 @@ function initModelSelector() {
       '</div>' +
       '<div id="modelSelectorHint" class="test-model-hint">加载模型中...</div>';
 
-    var firstGroup = bodyContent.querySelector('.test-form-group');
+    var firstGroup = selectorContainer.querySelector('.test-form-group');
     if (firstGroup) {
-      bodyContent.insertBefore(modelGroup, firstGroup);
+      selectorContainer.insertBefore(modelGroup, firstGroup);
     } else {
-      bodyContent.appendChild(modelGroup);
+      selectorContainer.appendChild(modelGroup);
     }
   }
 
@@ -1299,6 +1364,8 @@ function initModelSelector() {
       loadAvailableModels(true);
     });
   }
+
+  bindFormatModelTypeWatcher();
 
   if (modelSelectorRefs.modelNameEl) {
     modelSelectorRefs.modelNameEl.addEventListener('input', function () {
